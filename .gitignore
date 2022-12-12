@@ -1,0 +1,7 @@
+/.idea
+*.log
+*.exe
+*.gz
+*.exe~
+*.zip
+console/proxyweb
