@@ -1,7 +1,7 @@
 # Autoproxy
 
 [English](./README.md)
-[中文](./README_ZH_CN.md) 
+[中文](./README_ZH_CN.md)
 
 该项目提供浏览器http proxy代理服务，支持https、http协议代理；可以部署多级代理；支持TLS协议加密；主要使用与内网主机访问外部网站工具；
 
@@ -13,6 +13,27 @@
 - 支持动态路由
 - 支持自定义转发域名设置
 - 支持多种平台
+
+## 编译步骤
+
+1. 安装工具
+```
+go install github.com/akavel/rsrc@latest
+go install github.com/GeertJohan/go.rice@latest
+go install github.com/GeertJohan/go.rice/rice@latest
+```
+
+2. 克隆代码
+```
+git clone https://github.com/easymesh/autoproxy-windows.git
+```
+
+3. 编译代码
+```
+cd autoproxy-windows
+.\build.bat
+```
+
 
 ## 使用说明
 
@@ -67,7 +88,7 @@
 ### Alipay
 ![](./autoproxy_win/static/sponsor1.jpg)
 
-### Wechat Pay 
+### Wechat Pay
 ![](./autoproxy_win/static/sponsor2.jpg)
 
 ### 感谢支持

@@ -1,7 +1,7 @@
 # Autoproxy
 
 [English](./README.md)
-[中文](./README_ZH_CN.md) 
+[中文](./README_ZH_CN.md)
 
 The project provides browser http proxy proxy service, supports https and http protocol proxy; can deploy multi-level proxy; supports TLS protocol encryption; mainly uses tools for accessing external websites with intranet hosts;
 
@@ -13,6 +13,24 @@ The project provides browser http proxy proxy service, supports https and http p
 - Support dynamic routing
 - Support custom forwarding domain name settings
 - Support multiple platforms
+
+## Build Step
+
+1. Install tools
+```
+go install github.com/akavel/rsrc@latest
+go install github.com/GeertJohan/go.rice@latest
+go install github.com/GeertJohan/go.rice/rice@latest
+```
+2. Clone code
+```
+git clone https://github.com/easymesh/autoproxy-windows.git
+```
+3. Build code
+```
+cd autoproxy-windows
+.\build.bat
+```
 
 ## Usage Help
 
@@ -68,7 +86,7 @@ Support fuzzy matching rules, For example:
 ### Alipay
 ![](./autoproxy_win/static/sponsor1.jpg)
 
-### Wechat Pay 
+### Wechat Pay
 ![](./autoproxy_win/static/sponsor2.jpg)
 
 ### Thanks Support
