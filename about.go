@@ -1,14 +1,15 @@
 package main
 
 import (
+	"os/exec"
+
 	"github.com/astaxie/beego/logs"
 	"github.com/lxn/walk"
 	. "github.com/lxn/walk/declarative"
-	"os/exec"
 )
 
-func OpenBrowserWeb(url string)  {
-	cmd := exec.Command("rundll32","url.dll,FileProtocolHandler", url)
+func OpenBrowserWeb(url string) {
+	cmd := exec.Command("rundll32", "url.dll,FileProtocolHandler", url)
 	err := cmd.Run()
 	if err != nil {
 		logs.Error("run cmd fail, %s", err.Error())
@@ -38,10 +39,8 @@ func LoadImage(name string) walk.Image {
 	return image
 }
 
-
-
 func AboutAction() {
-	var ok    *walk.PushButton
+	var ok *walk.PushButton
 	var about *walk.Dialog
 	var err error
 
@@ -55,28 +54,12 @@ func AboutAction() {
 
 	_, err = Dialog{
 		AssignTo:      &about,
-		Title:         LangValue("about"),
+		Title:         "Sponsor",
 		Icon:          walk.IconInformation(),
 		MinSize:       Size{Width: 300, Height: 200},
 		DefaultButton: &ok,
-		Layout:  VBox{},
+		Layout:        VBox{},
 		Children: []Widget{
-			TextLabel{
-				Text: LangValue("aboutcontext"),
-				MinSize:       Size{Width: 250, Height: 200},
-				MaxSize:       Size{Width: 290, Height: 400},
-			},
-			Label{
-				Text: LangValue("version") + ": "+ VersionGet(),
-				TextAlignment: AlignCenter,
-			},
-			VSpacer{
-				MinSize: Size{Height: 10},
-			},
-			Label{
-				Text: LangValue("sponsor"),
-				TextAlignment: AlignCenter,
-			},
 			Composite{
 				Layout: HBox{},
 				Children: []Widget{
@@ -84,17 +67,17 @@ func AboutAction() {
 						MinSize: Size{Width: 10},
 					},
 					ImageView{
-						ToolTipText: LangValue("alipay"),
-						Image:    image1,
-						MaxSize:  Size{80, 80},
+						ToolTipText: "Alipay",
+						Image:       image1,
+						MaxSize:     Size{80, 80},
 					},
 					HSpacer{
 						MinSize: Size{Width: 10},
 					},
 					ImageView{
-						ToolTipText: LangValue("wecartpay"),
-						Image:    image2,
-						MaxSize:  Size{80, 80},
+						ToolTipText: "WecartPay",
+						Image:       image2,
+						MaxSize:     Size{80, 80},
 					},
 					HSpacer{
 						MinSize: Size{Width: 10},
@@ -102,19 +85,13 @@ func AboutAction() {
 				},
 			},
 			PushButton{
-				Text:      "paypal.me",
+				Text: "paypal.me",
 				OnClicked: func() {
 					OpenBrowserWeb("https://paypal.me/lixiangyun")
 				},
 			},
 			PushButton{
-				Text:      LangValue("officialweb"),
-				OnClicked: func() {
-					OpenBrowserWeb("https://github.com/easymesh/autoproxy-windows")
-				},
-			},
-			PushButton{
-				Text:      LangValue("accpet"),
+				Text:      "OK",
 				OnClicked: func() { about.Cancel() },
 			},
 		},

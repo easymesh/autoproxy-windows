@@ -2,24 +2,23 @@ package main
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/lxn/walk"
 	. "github.com/lxn/walk/declarative"
-	"time"
 )
 
 var defaultFont = Font{
 	PointSize: 14,
-	Bold: true,
+	Bold:      true,
 }
 
 var LastUpdate time.Time
 
-func StatUpdate(requst, flowsize uint64)  {
-	now := time.Now()
+func StatUpdate(requst, flowsize uint64) {
 	flowsizeStr := fmt.Sprintf("%s/s",
-		ByteView(int64(float64(flowsize) / now.Sub(LastUpdate).Seconds())))
+		ByteView(int64(float64(flowsize))))
 
-	LastUpdate = now
 	UpdateStatFlow(flowsizeStr)
 	NotifyUpdateFlow(flowsizeStr)
 }
@@ -28,7 +27,7 @@ func StatInit() error {
 	return nil
 }
 
-func StatRunningStatus(enable bool)  {
+func StatRunningStatus(enable bool) {
 	var image *walk.Icon
 	if enable {
 		image = ICON_Network_Enable
@@ -38,4 +37,3 @@ func StatRunningStatus(enable bool)  {
 	UpdateStatFlag(image)
 	NotifyUpdateIcon(image)
 }
-

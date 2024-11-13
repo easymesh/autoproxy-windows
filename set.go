@@ -13,7 +13,7 @@ func AutoRunningGet() bool {
 	return false
 }
 
-func AutoRunningSet(flag bool)  {
+func AutoRunningSet(flag bool) {
 	if flag {
 		DataIntValueSet("autorunning", 1)
 	} else {
@@ -21,72 +21,54 @@ func AutoRunningSet(flag bool)  {
 	}
 }
 
-func SettingWidget() []Widget {
-	var lang *walk.ComboBox
-	var auto *walk.RadioButton
-
-	return []Widget{
-		Label{
-			Text: LangValue("langname") + ":",
-		},
-		ComboBox{
-			AssignTo: &lang,
-			CurrentIndex:  LangOptionIdx(),
-			Model:         LangOptionGet(),
-			OnCurrentIndexChanged: func() {
-				LangOptionSet(lang.CurrentIndex())
-			},
-		},
-		Label{
-			Text: LangValue("whetherauto") + ":",
-		},
-		RadioButton{
-			AssignTo: &auto,
-			OnBoundsChanged: func() {
-				auto.SetChecked(AutoRunningGet())
-			},
-			OnClicked: func() {
-				auto.SetChecked(!AutoRunningGet())
-				AutoRunningSet(!AutoRunningGet())
-			},
-		},
-	}
-}
-
-func BaseSetting()  {
+func BaseSetting() {
 	var dlg *walk.Dialog
 	var acceptPB, cancelPB *walk.PushButton
+	var auto *walk.RadioButton
 
 	_, err := Dialog{
-		AssignTo: &dlg,
-		Title: LangValue("basesetting"),
-		Icon: walk.IconShield(),
+		AssignTo:      &dlg,
+		Title:         "Base Setting",
+		Icon:          walk.IconShield(),
 		DefaultButton: &acceptPB,
-		CancelButton: &cancelPB,
-		Size: Size{250, 200},
-		MinSize: Size{250, 200},
-		Layout:  VBox{},
+		CancelButton:  &cancelPB,
+		Size:          Size{250, 200},
+		MinSize:       Size{250, 200},
+		Layout:        VBox{},
 		Children: []Widget{
 			Composite{
 				Layout: Grid{Columns: 2},
-				Children: SettingWidget(),
+				Children: []Widget{
+					Label{
+						Text: "Auto Startup: ",
+					},
+					RadioButton{
+						AssignTo: &auto,
+						OnBoundsChanged: func() {
+							auto.SetChecked(AutoRunningGet())
+						},
+						OnClicked: func() {
+							auto.SetChecked(!AutoRunningGet())
+							AutoRunningSet(!AutoRunningGet())
+						},
+					},
+				},
 			},
 			Composite{
 				Layout: HBox{},
 				Children: []Widget{
 					PushButton{
 						AssignTo: &acceptPB,
-						Text:     LangValue("accpet"),
+						Text:     "OK",
 						OnClicked: func() {
 							go func() {
-								InfoBoxAction(dlg, LangValue("rebootsetting"))
 								dlg.Accept()
 							}()
 						},
 					},
 					PushButton{
-						AssignTo:  &cancelPB,
-						Text:      LangValue("cancel"),
+						AssignTo: &cancelPB,
+						Text:     "Cancel",
 						OnClicked: func() {
 							dlg.Cancel()
 						},

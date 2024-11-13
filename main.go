@@ -4,7 +4,7 @@ import (
 	"github.com/astaxie/beego/logs"
 )
 
-func main()  {
+func main() {
 	err := FileInit()
 	if err != nil {
 		logs.Error(err.Error())
@@ -16,11 +16,6 @@ func main()  {
 		return
 	}
 	err = BoxInit()
-	if err != nil {
-		logs.Error(err.Error())
-		return
-	}
-	err = LanguageInit()
 	if err != nil {
 		logs.Error(err.Error())
 		return

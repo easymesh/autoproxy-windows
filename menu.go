@@ -7,29 +7,23 @@ import (
 func MenuBarInit() []MenuItem {
 	return []MenuItem{
 		Menu{
-			Text: LangValue("setting"),
+			Text: "Setting",
 			Items: []MenuItem{
 				Action{
-					Text: LangValue("basesetting"),
+					Text: "Auto Startup",
 					OnTriggered: func() {
 						BaseSetting()
 					},
 				},
 				Action{
-					Text: LangValue("internetsettings"),
-					OnTriggered: func() {
-						InternetSetting()
-					},
-				},
-				Action{
-					Text: LangValue("runlog"),
+					Text: "Runlog",
 					OnTriggered: func() {
 						OpenBrowserWeb(logDirGet())
 					},
 				},
 				Separator{},
 				Action{
-					Text: LangValue("exit"),
+					Text: "Exit",
 					OnTriggered: func() {
 						CloseWindows()
 					},
@@ -37,43 +31,25 @@ func MenuBarInit() []MenuItem {
 			},
 		},
 		Action{
-			Text:     LangValue("forwarddomain"),
+			Text: "Domain",
 			OnTriggered: func() {
 				RemodeEdit()
 			},
 		},
 		Action{
-			Text: LangValue("remoteproxy"),
+			Text: "Proxy",
 			OnTriggered: func() {
 				RemoteServer()
 			},
 		},
-		/*
-		Menu{
-			Text: LangValue("authcred"),
-			Items: []MenuItem{
-				Action{
-					Text:     LangValue("viewcred"),
-					OnTriggered: func() {
-						AuthView()
-					},
-				},
-				Action{
-					Text:     LangValue("addcred"),
-					OnTriggered: func() {
-						AuthAdd()
-					},
-				},
-			},
-		},*/
 		Action{
-			Text: LangValue("miniwin"),
+			Text: "Mini Windows",
 			OnTriggered: func() {
 				Notify()
 			},
 		},
 		Action{
-			Text: LangValue("about"),
+			Text: "Sponsor",
 			OnTriggered: func() {
 				AboutAction()
 			},

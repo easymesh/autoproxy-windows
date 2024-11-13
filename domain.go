@@ -3,19 +3,20 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/astaxie/beego/logs"
-	"github.com/lxn/walk"
-	. "github.com/lxn/walk/declarative"
 	"io/ioutil"
 	"os"
 	"sort"
 	"strings"
 	"sync"
+
+	"github.com/astaxie/beego/logs"
+	"github.com/lxn/walk"
+	. "github.com/lxn/walk/declarative"
 )
 
 type DomainItem struct {
-	Index   int
-	Domain  string
+	Index  int
+	Domain string
 
 	checked bool
 }
@@ -28,14 +29,14 @@ type DomainModel struct {
 	sortColumn int
 	sortOrder  walk.SortOrder
 
-	items      []*DomainItem
+	items []*DomainItem
 }
 
-func (n *DomainModel)RowCount() int {
+func (n *DomainModel) RowCount() int {
 	return len(n.items)
 }
 
-func (n *DomainModel)Value(row, col int) interface{} {
+func (n *DomainModel) Value(row, col int) interface{} {
 	item := n.items[row]
 	switch col {
 	case 0:
@@ -77,7 +78,7 @@ func (m *DomainModel) Sort(col int, order walk.SortOrder) error {
 }
 
 var domainTable *DomainModel
-var domainList  []string
+var domainList []string
 
 func DomainSave(list []string) error {
 	sort.Strings(list)
@@ -104,7 +105,7 @@ func DomainList() []string {
 	return domainList
 }
 
-func DomainTableUpdate(find string)  {
+func DomainTableUpdate(find string) {
 	item := make([]*DomainItem, 0)
 	for idx, v := range domainList {
 		if strings.Index(v, find) == -1 {
@@ -163,7 +164,7 @@ func DomainDelete(owner *walk.Dialog) error {
 		}
 	}
 	if len(deleteList) == 0 {
-		return fmt.Errorf(LangValue("nochoiceobject"))
+		return fmt.Errorf("No choice any object")
 	}
 
 	var remanderList []string
@@ -183,12 +184,12 @@ func DomainDelete(owner *walk.Dialog) error {
 	domainList = remanderList
 	DomainSave(remanderList)
 
-	InfoBoxAction(owner, fmt.Sprintf("%v %s", deleteList, LangValue("deletesuccess")))
+	InfoBoxAction(owner, fmt.Sprintf("%v %s", deleteList, "Delete Success"))
 
 	return nil
 }
 
-func RemodeEdit()  {
+func RemodeEdit() {
 	DomainTableUpdate("")
 
 	var dlg *walk.Dialog
@@ -197,33 +198,33 @@ func RemodeEdit()  {
 	var addLine, findLine *walk.LineEdit
 
 	_, err := Dialog{
-		AssignTo: &dlg,
-		Title: LangValue("forwarddomain"),
-		Icon: walk.IconShield(),
+		AssignTo:      &dlg,
+		Title:         "Forward Domain",
+		Icon:          walk.IconShield(),
 		DefaultButton: &acceptPB,
-		CancelButton: &cancelPB,
-		Size: Size{300, 450},
-		MinSize: Size{300, 300},
-		Layout:  VBox{},
+		CancelButton:  &cancelPB,
+		Size:          Size{300, 450},
+		MinSize:       Size{300, 300},
+		Layout:        VBox{},
 		Children: []Widget{
 			Composite{
 				Layout: Grid{Columns: 3, MarginsZero: true},
 				Children: []Widget{
 					Label{
-						Text: LangValue("domain") + ":",
+						Text: "Domain: ",
 					},
-					LineEdit {
+					LineEdit{
 						AssignTo: &addLine,
-						Text: "",
+						Text:     "",
 					},
 					PushButton{
 						AssignTo: &addPB,
-						Text:     LangValue("add"),
+						Text:     "Add",
 						OnClicked: func() {
 							addDomain := addLine.Text()
 
 							if addDomain == "" {
-								ErrorBoxAction(dlg, LangValue("inputdomain"))
+								ErrorBoxAction(dlg, "Input Domain")
 								return
 							}
 							err := DomainAdd(addDomain)
@@ -233,7 +234,7 @@ func RemodeEdit()  {
 							}
 
 							go func() {
-								InfoBoxAction(dlg, addDomain + " " + LangValue("addsuccess") )
+								InfoBoxAction(dlg, addDomain+" add success")
 							}()
 
 							addLine.SetText("")
@@ -243,15 +244,15 @@ func RemodeEdit()  {
 						},
 					},
 					Label{
-						Text: LangValue("findkey") + ":",
+						Text: "Find Key: ",
 					},
-					LineEdit {
+					LineEdit{
 						AssignTo: &findLine,
-						Text: "",
+						Text:     "",
 					},
 					PushButton{
 						AssignTo: &findPB,
-						Text:     LangValue("find"),
+						Text:     "Find",
 						OnClicked: func() {
 							DomainTableUpdate(findLine.Text())
 						},
@@ -261,10 +262,10 @@ func RemodeEdit()  {
 			TableView{
 				AlternatingRowBG: true,
 				ColumnsOrderable: true,
-				CheckBoxes: true,
+				CheckBoxes:       true,
 				Columns: []TableViewColumn{
 					{Title: "#", Width: 60},
-					{Title: LangValue("domain"), Width: 160},
+					{Title: "Domain", Width: 160},
 				},
 				StyleCell: func(style *walk.CellStyle) {
 					if style.Row()%2 == 0 {
@@ -273,14 +274,14 @@ func RemodeEdit()  {
 						style.BackgroundColor = walk.RGB(220, 220, 220)
 					}
 				},
-				Model:domainTable,
+				Model: domainTable,
 			},
 			Composite{
 				Layout: HBox{},
 				Children: []Widget{
 					PushButton{
 						AssignTo: &acceptPB,
-						Text:     LangValue("delete"),
+						Text:     "Delete",
 						OnClicked: func() {
 							err := DomainDelete(dlg)
 							if err != nil {
@@ -293,8 +294,8 @@ func RemodeEdit()  {
 						},
 					},
 					PushButton{
-						AssignTo:  &cancelPB,
-						Text:      LangValue("cancel"),
+						AssignTo: &cancelPB,
+						Text:     "Cancel",
 						OnClicked: func() {
 							dlg.Cancel()
 						},
@@ -302,11 +303,9 @@ func RemodeEdit()  {
 				},
 			},
 		},
-
 	}.Run(mainWindow)
 
 	if err != nil {
 		logs.Error(err.Error())
 	}
 }
-

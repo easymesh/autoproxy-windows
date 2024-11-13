@@ -3,15 +3,16 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/astaxie/beego/logs"
-	"github.com/easymesh/autoproxy-windows/engin"
-	"github.com/lxn/walk"
-	. "github.com/lxn/walk/declarative"
 	"io"
 	"net/http"
 	"net/url"
 	"strings"
 	"time"
+
+	"github.com/astaxie/beego/logs"
+	"github.com/easymesh/autoproxy-windows/engin"
+	"github.com/lxn/walk"
+	. "github.com/lxn/walk/declarative"
 )
 
 type RemoteItem struct {
@@ -31,7 +32,7 @@ func TestUrlGet() string {
 	return url
 }
 
-func TestUrlSet(url string)  {
+func TestUrlSet(url string) {
 	DataStringValueSet("remotetest", url)
 }
 
@@ -44,7 +45,7 @@ func remoteGet() []RemoteItem {
 		if value != "" {
 			err := json.Unmarshal([]byte(value), &list)
 			if err != nil {
-				logs.Error("json marshal fail",err.Error())
+				logs.Error("json marshal fail", err.Error())
 			}
 		}
 		remoteCache = list
@@ -52,16 +53,16 @@ func remoteGet() []RemoteItem {
 	return remoteCache
 }
 
-func remoteSync()  {
+func remoteSync() {
 	value, err := json.Marshal(remoteCache)
 	if err != nil {
-		logs.Error("json marshal fail",err.Error())
+		logs.Error("json marshal fail", err.Error())
 	} else {
 		DataStringValueSet("remotelist", string(value))
 	}
 }
 
-func RemoteIndexSet(name string)  {
+func RemoteIndexSet(name string) {
 	err := DataStringValueSet("remoteIndex", name)
 	if err != nil {
 		logs.Error(err.Error())
@@ -128,7 +129,7 @@ func RemoteGet() RemoteItem {
 	}
 }
 
-func RemoteDelete(name string)  {
+func RemoteDelete(name string) {
 	defer remoteSync()
 	for i, v := range remoteCache {
 		if v.Name == name {
@@ -151,7 +152,7 @@ func RemoteUpdate(item RemoteItem) {
 
 func ProtocalOptions() []string {
 	return []string{
-		"HTTP","HTTPS",
+		"HTTP", "HTTPS",
 	}
 }
 
@@ -172,7 +173,7 @@ func TestEngin(testhttps string, item *RemoteItem) (time.Duration, error) {
 	var auth *engin.AuthInfo
 	if item.Auth {
 		auth = &engin.AuthInfo{
-			User: item.User,
+			User:  item.User,
 			Token: item.Password,
 		}
 	}
@@ -213,7 +214,7 @@ func TestEngin(testhttps string, item *RemoteItem) (time.Duration, error) {
 
 var remoteDlg *walk.Dialog
 
-func RemoteServer()  {
+func RemoteServer() {
 	var acceptPB, cancelPB *walk.PushButton
 
 	var remote, protocal *walk.ComboBox
@@ -234,26 +235,26 @@ func RemoteServer()  {
 	}
 
 	_, err := Dialog{
-		AssignTo: &remoteDlg,
-		Title: LangValue("remoteproxy"),
-		Icon: walk.IconShield(),
+		AssignTo:      &remoteDlg,
+		Title:         "Remote Proxy Setting",
+		Icon:          walk.IconShield(),
 		DefaultButton: &acceptPB,
-		CancelButton: &cancelPB,
-		Size: Size{250, 300},
-		MinSize: Size{250, 300},
-		Layout:  VBox{},
+		CancelButton:  &cancelPB,
+		Size:          Size{250, 300},
+		MinSize:       Size{250, 300},
+		Layout:        VBox{},
 		Children: []Widget{
 			Composite{
 				Layout: Grid{Columns: 2},
 				Children: []Widget{
 					Label{
-						Text: LangValue("remoteproxy") + ":",
+						Text: "Remote Proxy: ",
 					},
 					ComboBox{
-						AssignTo: &remote,
-						Editable: true,
-						CurrentIndex:  0,
-						Model:         RemoteOptions(),
+						AssignTo:     &remote,
+						Editable:     true,
+						CurrentIndex: 0,
+						Model:        RemoteOptions(),
 						OnBoundsChanged: func() {
 							curRemoteItem = RemoteFind(remote.Text())
 							updateHandler()
@@ -269,31 +270,31 @@ func RemoteServer()  {
 					},
 
 					Label{
-						Text: LangValue("remoteaddress") + ":",
+						Text: "Remote Address: ",
 					},
 
 					LineEdit{
 						AssignTo: &address,
-						Text: curRemoteItem.Address,
+						Text:     curRemoteItem.Address,
 						OnEditingFinished: func() {
 							curRemoteItem.Address = address.Text()
 						},
 					},
 
 					Label{
-						Text: LangValue("protocal") + ":",
+						Text: "Remote Protocal: ",
 					},
 					ComboBox{
 						AssignTo: &protocal,
-						Model: ProtocalOptions(),
-						Value: curRemoteItem.Protocal,
+						Model:    ProtocalOptions(),
+						Value:    curRemoteItem.Protocal,
 						OnCurrentIndexChanged: func() {
 							curRemoteItem.Protocal = protocal.Text()
 						},
 					},
 
 					Label{
-						Text: LangValue("whetherauth") + ":",
+						Text: "Auth: ",
 					},
 					RadioButton{
 						AssignTo: &auth,
@@ -308,28 +309,25 @@ func RemoteServer()  {
 							passwd.SetEnabled(curRemoteItem.Auth)
 						},
 					},
-
 					Label{
-						Text: LangValue("user") + ":",
+						Text: "User: ",
 					},
-
 					LineEdit{
 						AssignTo: &user,
-						Text: curRemoteItem.User,
-						Enabled: curRemoteItem.Auth,
+						Text:     curRemoteItem.User,
+						Enabled:  curRemoteItem.Auth,
 						OnEditingFinished: func() {
 							curRemoteItem.User = user.Text()
 						},
 					},
 
 					Label{
-						Text: LangValue("password") + ":",
+						Text: "Password: ",
 					},
-
 					LineEdit{
 						AssignTo: &passwd,
-						Text: curRemoteItem.Password,
-						Enabled: curRemoteItem.Auth,
+						Text:     curRemoteItem.Password,
+						Enabled:  curRemoteItem.Auth,
 						OnEditingFinished: func() {
 							curRemoteItem.Password = passwd.Text()
 						},
@@ -337,7 +335,7 @@ func RemoteServer()  {
 
 					PushButton{
 						AssignTo: &testbut,
-						Text: LangValue("test"),
+						Text:     "Testing",
 						OnClicked: func() {
 							go func() {
 								testbut.SetEnabled(false)
@@ -346,8 +344,8 @@ func RemoteServer()  {
 									ErrorBoxAction(remoteDlg, err.Error())
 								} else {
 									info := fmt.Sprintf("%s, %s %dms",
-										LangValue("testpass"),
-										LangValue("delay"), delay/time.Millisecond )
+										"Test Pass",
+										"Delay", delay/time.Millisecond)
 									InfoBoxAction(remoteDlg, info)
 								}
 								testbut.SetEnabled(true)
@@ -357,7 +355,7 @@ func RemoteServer()  {
 
 					LineEdit{
 						AssignTo: &testurl,
-						Text: TestUrlGet(),
+						Text:     TestUrlGet(),
 						OnEditingFinished: func() {
 							TestUrlSet(testurl.Text())
 						},
@@ -369,16 +367,16 @@ func RemoteServer()  {
 				Children: []Widget{
 					PushButton{
 						AssignTo: &acceptPB,
-						Text:     LangValue("save"),
+						Text:     "Save",
 						OnClicked: func() {
 							if curRemoteItem.Auth {
 								if curRemoteItem.User == "" || curRemoteItem.Password == "" {
-									ErrorBoxAction(remoteDlg, LangValue("inputuserandpasswd"))
+									ErrorBoxAction(remoteDlg, "Please input user and passwd")
 									return
 								}
 							}
 							if curRemoteItem.Name == "" || curRemoteItem.Address == "" {
-								ErrorBoxAction(remoteDlg, LangValue("inputnameandaddress"))
+								ErrorBoxAction(remoteDlg, "Please input name and address")
 								return
 							}
 							RemoteUpdate(curRemoteItem)
@@ -387,8 +385,8 @@ func RemoteServer()  {
 						},
 					},
 					PushButton{
-						AssignTo:  &cancelPB,
-						Text:      LangValue("delete"),
+						AssignTo: &cancelPB,
+						Text:     "Delete",
 						OnClicked: func() {
 							RemoteDelete(curRemoteItem.Name)
 							remote.SetModel(RemoteOptions())
@@ -397,8 +395,8 @@ func RemoteServer()  {
 						},
 					},
 					PushButton{
-						AssignTo:  &cancelPB,
-						Text:      LangValue("cancel"),
+						AssignTo: &cancelPB,
+						Text:     "Cancel",
 						OnClicked: func() {
 							remoteDlg.Cancel()
 						},

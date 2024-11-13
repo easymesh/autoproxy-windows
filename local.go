@@ -1,10 +1,10 @@
 package main
 
 import (
-	"github.com/astaxie/beego/logs"
 	"net"
-)
 
+	"github.com/astaxie/beego/logs"
+)
 
 type Options struct {
 	Name   string
@@ -13,9 +13,9 @@ type Options struct {
 
 func ModeOptions() []*Options {
 	return []*Options{
-		{"local",LangValue("localforward")},
-		{"auto",LangValue("autoforward")},
-		{"proxy", LangValue("globalforward")},
+		{"local", "Local Forward"},
+		{"auto", "Auto Forward"},
+		{"proxy", "Global Forward"},
 	}
 }
 
@@ -27,7 +27,7 @@ func ModeOptionsIdx() int {
 	return int(DataIntValueGet("LocalMode"))
 }
 
-func ModeOptionsSet(idx int)  {
+func ModeOptionsSet(idx int) {
 	err := DataIntValueSet("LocalMode", uint32(idx))
 	if err != nil {
 		logs.Error(err.Error())
@@ -42,39 +42,33 @@ func PortOptionGet() int {
 	return int(value)
 }
 
-func PortOptionSet(value int)  {
+func PortOptionSet(value int) {
 	err := DataIntValueSet("LocalPort", uint32(value))
 	if err != nil {
 		logs.Error(err.Error())
 	}
 }
 
-var ifaceList []string
-
 func IfaceOptions() []string {
-	if ifaceList != nil {
-		return ifaceList
-	}
+	output := []string{"0.0.0.0", "::"}
+
 	ifaces, err := net.Interfaces()
 	if err != nil {
-		ErrorBoxAction(mainWindow, err.Error())
-		return nil
+		logs.Error(err.Error())
+		return output
 	}
-	output := []string{"0.0.0.0"}
 	for _, v := range ifaces {
-		if v.Flags & net.FlagUp == 0 {
+		if v.Flags&net.FlagUp == 0 {
 			continue
 		}
-		address, err := InterfaceLocalIP(&v)
+		address, err := InterfaceAddsGet(&v)
 		if err != nil {
 			continue
 		}
-		if len(address) == 0 {
-			continue
+		for _, addr := range address {
+			output = append(output, addr.String())
 		}
-		output = append(output, address[0].String())
 	}
-	ifaceList = output
 	return output
 }
 
@@ -89,10 +83,9 @@ func LocalIfaceOptionsIdx() int {
 	return 0
 }
 
-func LocalIfaceOptionsSet(ifaceName string)  {
+func LocalIfaceOptionsSet(ifaceName string) {
 	err := DataStringValueSet("LocalIface", ifaceName)
 	if err != nil {
 		logs.Error(err.Error())
 	}
 }
-

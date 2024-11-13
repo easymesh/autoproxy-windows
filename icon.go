@@ -1,9 +1,10 @@
 package main
 
 import (
+	"os"
+
 	"github.com/astaxie/beego/logs"
 	"github.com/lxn/walk"
-	"os"
 )
 
 func IconLoadFromBox(filename string, size walk.Size) *walk.Icon {
@@ -35,9 +36,11 @@ func IconLoadFromBox(filename string, size walk.Size) *walk.Icon {
 	return icon
 }
 
-var ICON_Main            *walk.Icon
+var ICON_Main *walk.Icon
 var ICON_Network_Disable *walk.Icon
-var ICON_Network_Enable  *walk.Icon
+var ICON_Network_Enable *walk.Icon
+var ICON_Start *walk.Icon
+var ICON_Stop *walk.Icon
 
 var ICON_Max_Size = walk.Size{
 	Width: 72, Height: 72,
@@ -51,5 +54,7 @@ func IconInit() error {
 	ICON_Main = IconLoadFromBox("main.ico", ICON_Max_Size)
 	ICON_Network_Disable = IconLoadFromBox("network_disable.ico", ICON_Min_Size)
 	ICON_Network_Enable = IconLoadFromBox("network_enable.ico", ICON_Min_Size)
+	ICON_Start = IconLoadFromBox("start.ico", ICON_Min_Size)
+	ICON_Stop = IconLoadFromBox("stop.ico", ICON_Min_Size)
 	return nil
 }

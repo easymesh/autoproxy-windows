@@ -1,35 +1,36 @@
 package main
 
 import (
+	"time"
+
 	"github.com/astaxie/beego/logs"
 	"github.com/lxn/walk"
-	"time"
 )
 
 var notify *walk.NotifyIcon
 
-func NotifyUpdateIcon(icon *walk.Icon)  {
+func NotifyUpdateIcon(icon *walk.Icon) {
 	if notify == nil {
 		return
 	}
 	notify.SetIcon(icon)
 }
 
-func NotifyUpdateFlow(flow string)  {
+func NotifyUpdateFlow(flow string) {
 	if notify == nil {
 		return
 	}
 	notify.SetToolTip(flow)
 }
 
-func Notify()  {
+func Notify() {
 	if notify == nil {
 		NotifyInit()
 	}
 	mainWindow.SetVisible(false)
 }
 
-func NotifyExit()  {
+func NotifyExit() {
 	if notify == nil {
 		return
 	}
@@ -39,7 +40,7 @@ func NotifyExit()  {
 
 var lastCheck time.Time
 
-func NotifyInit()  {
+func NotifyInit() {
 	var err error
 
 	notify, err = walk.NewNotifyIcon(mainWindow)
@@ -55,7 +56,7 @@ func NotifyInit()  {
 	}
 
 	exitBut := walk.NewAction()
-	err = exitBut.SetText(LangValue("exit"))
+	err = exitBut.SetText("Exit")
 	if err != nil {
 		logs.Error("notify new action fail, %s", err.Error())
 		return
@@ -66,7 +67,7 @@ func NotifyInit()  {
 	})
 
 	showBut := walk.NewAction()
-	err = showBut.SetText(LangValue("showwindows"))
+	err = showBut.SetText("Show Windows")
 	if err != nil {
 		logs.Error("notify new action fail, %s", err.Error())
 		return
@@ -75,7 +76,7 @@ func NotifyInit()  {
 	showBut.Triggered().Attach(func() {
 		mainWindow.SetVisible(true)
 	})
-	
+
 	if err := notify.ContextMenu().Actions().Add(showBut); err != nil {
 		logs.Error("notify add action fail, %s", err.Error())
 		return
@@ -91,7 +92,7 @@ func NotifyInit()  {
 			return
 		}
 		now := time.Now()
-		if now.Sub(lastCheck) < 2 * time.Second {
+		if now.Sub(lastCheck) < 2*time.Second {
 			mainWindow.SetVisible(true)
 		}
 		lastCheck = now
@@ -99,4 +100,3 @@ func NotifyInit()  {
 
 	notify.SetVisible(true)
 }
-

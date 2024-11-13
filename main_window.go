@@ -1,45 +1,46 @@
 package main
 
 import (
+	"time"
+
 	"github.com/astaxie/beego/logs"
 	"github.com/lxn/walk"
 	. "github.com/lxn/walk/declarative"
-	"time"
 )
 
 var mainWindow *walk.MainWindow
 
-var mainWindowWidth = 300
-var mainWindowHeight = 200
+var mainWindowWidth = 400
+var mainWindowHeight = 180
 
-func waitWindows()  {
-	for  {
+func waitWindows() {
+	for {
 		if mainWindow != nil && mainWindow.Visible() {
 			mainWindow.SetSize(walk.Size{
 				mainWindowWidth,
 				mainWindowHeight})
 			break
 		}
-		time.Sleep(100*time.Millisecond)
+		time.Sleep(100 * time.Millisecond)
 	}
 	NotifyInit()
 }
 
-func MainWindowsClose()  {
+func MainWindowsClose() {
 	if mainWindow != nil {
 		mainWindow.Close()
 		mainWindow = nil
 	}
 }
 
-func statusUpdate()  {
+func statusUpdate() {
 	StatUpdate(StatGet())
 }
 
-func init()  {
+func init() {
 	go func() {
 		waitWindows()
-		for  {
+		for {
 			statusUpdate()
 			time.Sleep(time.Second)
 		}
@@ -47,27 +48,23 @@ func init()  {
 }
 
 var isAuth *walk.RadioButton
-var protocal  *walk.RadioButton
+var protocal *walk.RadioButton
 
 func mainWindows() {
 	CapSignal(CloseWindows)
 	cnt, err := MainWindow{
-		Title:   "AutoProxy " + VersionGet(),
-		Icon: ICON_Main,
-		AssignTo: &mainWindow,
-		MinSize: Size{mainWindowWidth, mainWindowHeight-1},
-		Size: Size{mainWindowWidth, mainWindowHeight-1},
-		Layout:  VBox{},
-		MenuItems: MenuBarInit(),
+		Title:          "Auto Proxy " + VersionGet(),
+		Icon:           ICON_Main,
+		AssignTo:       &mainWindow,
+		MinSize:        Size{mainWindowWidth, mainWindowHeight - 1},
+		Size:           Size{mainWindowWidth, mainWindowHeight - 1},
+		Layout:         VBox{Margins: Margins{Top: 10, Bottom: 10, Left: 10, Right: 10}},
+		MenuItems:      MenuBarInit(),
 		StatusBarItems: StatusBarInit(),
 		Children: []Widget{
 			Composite{
-				Layout: Grid{Columns: 2},
+				Layout:   Grid{Columns: 2},
 				Children: ConsoleWidget(),
-			},
-			Composite{
-				Layout: Grid{Columns: 2},
-				Children: ButtonWight(),
 			},
 		},
 	}.Run()
@@ -78,14 +75,14 @@ func mainWindows() {
 		logs.Info("main windows exit %d", cnt)
 	}
 
-	if err:= recover();err != nil{
+	if err := recover(); err != nil {
 		logs.Error(err)
 	}
 
 	CloseWindows()
 }
 
-func CloseWindows()  {
+func CloseWindows() {
 	if ServerRunning() {
 		ServerShutdown()
 	}

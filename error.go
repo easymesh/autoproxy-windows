@@ -1,35 +1,36 @@
 package main
 
 import (
+	"time"
+
 	"github.com/astaxie/beego/logs"
 	"github.com/lxn/walk"
 	. "github.com/lxn/walk/declarative"
-	"time"
 )
 
-func boxAction(from walk.Form, title string, icon *walk.Icon, message string)  {
+func boxAction(from walk.Form, title string, icon *walk.Icon, message string) {
 	var dlg *walk.Dialog
 	var cancelPB *walk.PushButton
 
 	_, err := Dialog{
-		AssignTo: &dlg,
-		Title: title,
-		Icon: icon,
-		MinSize: Size{210, 150},
-		Size: Size{210, 150},
-		MaxSize: Size{310, 210},
+		AssignTo:     &dlg,
+		Title:        title,
+		Icon:         icon,
+		MinSize:      Size{210, 150},
+		Size:         Size{210, 150},
+		MaxSize:      Size{310, 210},
 		CancelButton: &cancelPB,
-		Layout:  VBox{},
+		Layout:       VBox{},
 		Children: []Widget{
 			TextLabel{
-				Text: message,
+				Text:          message,
 				TextAlignment: AlignHNearVCenter,
-				MinSize: Size{200, 150},
-				MaxSize: Size{300, 200},
+				MinSize:       Size{200, 150},
+				MaxSize:       Size{300, 200},
 			},
 			PushButton{
-				AssignTo:  &cancelPB,
-				Text:      LangValue("accpet"),
+				AssignTo: &cancelPB,
+				Text:     "OK",
 				OnClicked: func() {
 					dlg.Accept()
 				},
@@ -43,16 +44,16 @@ func boxAction(from walk.Form, title string, icon *walk.Icon, message string)  {
 }
 
 func ErrorBoxAction(form walk.Form, message string) {
-	time.Sleep(200*time.Millisecond)
-	boxAction(form, LangValue("error"), walk.IconError(), message)
+	time.Sleep(200 * time.Millisecond)
+	boxAction(form, "Error", walk.IconError(), message)
 }
 
 func InfoBoxAction(form walk.Form, message string) {
-	time.Sleep(200*time.Millisecond)
-	boxAction(form, LangValue("info"), walk.IconInformation(), message)
+	time.Sleep(200 * time.Millisecond)
+	boxAction(form, "Info", walk.IconInformation(), message)
 }
 
 func ConfirmBoxAction(form walk.Form, message string) {
-	time.Sleep(200*time.Millisecond)
-	boxAction(form, LangValue("confirm"), walk.IconWarning(), message)
+	time.Sleep(200 * time.Millisecond)
+	boxAction(form, "Confirm", walk.IconWarning(), message)
 }
