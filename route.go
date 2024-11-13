@@ -1,14 +1,15 @@
 package main
 
 import (
-	"github.com/astaxie/beego/logs"
 	"strings"
 	"sync"
+
+	"github.com/astaxie/beego/logs"
 )
 
 type RouteCtrl struct {
 	sync.RWMutex
-	cache map[string]string
+	cache  map[string]string
 	domain []string
 }
 
@@ -34,7 +35,7 @@ func stringCompare(domain string, match string) bool {
 	begin := strings.Index(match, "*")
 	end := strings.Index(match[begin+1:], "*")
 	if end != -1 {
-		end += begin+1
+		end += begin + 1
 	}
 	if begin != -1 && end == -1 {
 		// suffix match
@@ -52,14 +53,14 @@ func stringCompare(domain string, match string) bool {
 			return false
 		}
 	}
-	idx := strings.Index(domain, match[begin+1: end])
+	idx := strings.Index(domain, match[begin+1:end])
 	if idx == -1 {
 		return false
 	}
 	return true
 }
 
-func RouteUpdate()  {
+func RouteUpdate() {
 	routeCtrl.Lock()
 	defer routeCtrl.Unlock()
 
@@ -115,7 +116,7 @@ func RouteCheck(address string) bool {
 	result, flag := routeCtrl.cache[address]
 	routeCtrl.RUnlock()
 
-	if flag == false {
+	if !flag {
 		routeCtrl.Lock()
 		result = routeMatch(address)
 		routeCtrl.Unlock()

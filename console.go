@@ -48,10 +48,12 @@ func ConsoleWidget() []Widget {
 			StatRunningStatus(true)
 			ConsoleEnable(false)
 			active.SetImage(ICON_Stop)
+			active.SetText("Stop")
 		} else {
 			StatRunningStatus(false)
 			ConsoleEnable(true)
 			active.SetImage(ICON_Start)
+			active.SetText("Start")
 		}
 
 		mutex.Unlock()
@@ -150,7 +152,7 @@ func ConsoleWidget() []Widget {
 		PushButton{
 			AssignTo: &active,
 			Image:    ICON_Start,
-			Text:     " ",
+			Text:     "Start",
 			OnClicked: func() {
 				go activeFunc()
 			},

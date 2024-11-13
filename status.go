@@ -6,11 +6,14 @@ import (
 )
 
 var statusFlow *walk.StatusBarItem
-var connectFlow *walk.StatusBarItem
+var sessionFlow *walk.StatusBarItem
+var requestFlow *walk.StatusBarItem
 
-func UpdateStatFlow(flow string) {
+func UpdateStatFlow(speed string, session string, request string) {
 	if statusFlow != nil {
-		statusFlow.SetText(flow)
+		statusFlow.SetText("DataFlow: " + speed)
+		requestFlow.SetText("Request: " + request)
+		sessionFlow.SetText("Session: " + session)
 	}
 }
 
@@ -23,16 +26,20 @@ func UpdateStatFlag(image *walk.Icon) {
 func StatusBarInit() []StatusBarItem {
 	return []StatusBarItem{
 		{
-			AssignTo:    &statusFlow,
-			Icon:        ICON_Network_Disable,
-			ToolTipText: "status",
-			Width:       80,
+			AssignTo: &statusFlow,
+			Icon:     ICON_Network_Disable,
+			Text:     "",
+			Width:    120,
 		},
 		{
-			AssignTo:    &connectFlow,
-			Text:        "0",
-			ToolTipText: "sessions",
-			Width:       80,
+			AssignTo: &sessionFlow,
+			Text:     "",
+			Width:    80,
+		},
+		{
+			AssignTo: &requestFlow,
+			Text:     "",
+			Width:    80,
 		},
 	}
 }

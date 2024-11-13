@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"net/url"
 	"strings"
@@ -203,7 +202,7 @@ func TestEngin(testhttps string, item *RemoteItem) (time.Duration, error) {
 		_, err = forward.Http(request)
 	}
 
-	if err != nil && err != io.EOF {
+	if err != nil && err.Error() != "EOF" {
 		logs.Error("remote server %s forward %s fail, %s",
 			item.Address, urls.RawPath, err.Error())
 		return 0, err

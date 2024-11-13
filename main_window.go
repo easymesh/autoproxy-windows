@@ -47,9 +47,6 @@ func init() {
 	}()
 }
 
-var isAuth *walk.RadioButton
-var protocal *walk.RadioButton
-
 func mainWindows() {
 	CapSignal(CloseWindows)
 	cnt, err := MainWindow{

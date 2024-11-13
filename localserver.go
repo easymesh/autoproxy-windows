@@ -2,30 +2,23 @@ package main
 
 import (
 	"fmt"
-	"github.com/astaxie/beego/logs"
-	"github.com/easymesh/autoproxy-windows/engin"
 	"net/http"
 	"strings"
 	"sync"
+
+	"github.com/astaxie/beego/logs"
+	"github.com/easymesh/autoproxy-windows/engin"
 )
 
 var access engin.Access
 
-func StatGet() (uint64, uint64) {
+func StatGet() engin.StatInfo {
 	acc := access
 	if acc != nil {
-		return acc.Stat()
+		return acc.StatGet()
 	}
-	return 0,0
+	return engin.StatInfo{}
 }
-
-/*
-func AuthSwitch(auth *engin.AuthInfo) bool {
-	if auth == nil {
-		return false
-	}
-	return AuthCheck(auth.User, auth.Token)
-}*/
 
 var LocalForward engin.Forward
 var RemoteForward engin.Forward
@@ -75,13 +68,13 @@ func remoteUpdate() error {
 		auth = &engin.AuthInfo{User: remote.User, Token: remote.Password}
 	}
 
-	forward, err := engin.NewHttpsProtcal(remote.Address, 60, auth, tlsEnable, "", "" )
+	forward, err := engin.NewHttpsProtcal(remote.Address, 60, auth, tlsEnable, "", "")
 	if err != nil {
 		logs.Error(err.Error())
 		return err
 	}
 
-	logs.Info("remote swtich to %s success", remote.Name )
+	logs.Info("remote swtich to %s success", remote.Name)
 
 	if RemoteForward != nil {
 		RemoteForward.Close()
@@ -107,7 +100,7 @@ func modeUpdate() error {
 	switch mode {
 	case "auto":
 		acc.ForwardHandlerSet(AutoForwardFunc)
-	case "proxy" :
+	case "proxy":
 		acc.ForwardHandlerSet(ProxyForwardFunc)
 	case "local":
 		acc.ForwardHandlerSet(LocalForwardFunc)

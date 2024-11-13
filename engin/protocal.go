@@ -2,15 +2,17 @@ package engin
 
 import (
 	"fmt"
-	"github.com/astaxie/beego/logs"
 	"io/ioutil"
 	"net"
 	"net/http"
+	"sync/atomic"
+
+	"github.com/astaxie/beego/logs"
 )
 
-var HTTPS_CLIENT_CONNECT_FLAG  = []byte("HTTP/1.1 200 Connection Established\r\n\r\n")
+var HTTPS_CLIENT_CONNECT_FLAG = []byte("HTTP/1.1 200 Connection Established\r\n\r\n")
 
-func (acc *HttpAccess)HttpsForward(address string, r *http.Request) (net.Conn, error) {
+func (acc *HttpAccess) HttpsForward(address string, r *http.Request) (net.Conn, error) {
 	if acc.forwardHandler != nil {
 		forward := acc.forwardHandler(address, r)
 		return forward.Https(address, r)
@@ -18,7 +20,7 @@ func (acc *HttpAccess)HttpsForward(address string, r *http.Request) (net.Conn, e
 	return nil, fmt.Errorf("forward handler is null")
 }
 
-func (acc *HttpAccess)HttpForward(address string, r *http.Request) (*http.Response, error) {
+func (acc *HttpAccess) HttpForward(address string, r *http.Request) (*http.Response, error) {
 	if acc.forwardHandler != nil {
 		forward := acc.forwardHandler(address, r)
 		return forward.Http(r)
@@ -26,7 +28,7 @@ func (acc *HttpAccess)HttpForward(address string, r *http.Request) (*http.Respon
 	return nil, fmt.Errorf("forward handler is null")
 }
 
-func (acc *HttpAccess)HttpsRoundTripper(w http.ResponseWriter, r *http.Request) {
+func (acc *HttpAccess) HttpsRoundTripper(w http.ResponseWriter, r *http.Request) {
 	hij, ok := w.(http.Hijacker)
 	if !ok {
 		logs.Error("httpserver does not support hijacking")
@@ -61,16 +63,19 @@ func (acc *HttpAccess)HttpsRoundTripper(w http.ResponseWriter, r *http.Request) 
 	}
 
 	go func() {
-		ConnectCopyWithTimeout(client, server, 60, func(cnt uint64) {
-			acc.StatAdd(cnt)
+
+		atomic.AddInt64(&acc.stat.SessionCnt, 1)
+		defer atomic.AddInt64(&acc.stat.SessionCnt, -1)
+
+		ConnectCopyWithTimeout(client, server, 60, func(cnt int64) {
+			atomic.AddInt64(&acc.stat.ForwardSize, cnt)
 		})
 	}()
 }
 
-func (acc *HttpAccess)HttpRoundTripper(r *http.Request) (*http.Response, error) {
+func (acc *HttpAccess) HttpRoundTripper(r *http.Request) (*http.Response, error) {
 	if r.Body != nil {
 		r.Body = ioutil.NopCloser(r.Body)
 	}
 	return acc.HttpForward(Address(r.URL), r)
 }
-

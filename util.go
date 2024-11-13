@@ -3,13 +3,10 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net"
 	"os"
 	"os/signal"
-	"strings"
 	"syscall"
-	"time"
 
 	"github.com/astaxie/beego/logs"
 
@@ -17,7 +14,7 @@ import (
 )
 
 func SaveToFile(name string, body []byte) error {
-	return ioutil.WriteFile(name, body, 0664)
+	return os.WriteFile(name, body, 0664)
 }
 
 func GetToken(length int) string {
@@ -69,10 +66,6 @@ func InterfaceAddsGet(iface *net.Interface) ([]net.IP, error) {
 		return nil, fmt.Errorf("interface not any address.")
 	}
 	return ips, nil
-}
-
-func IsIPv4(ip net.IP) bool {
-	return strings.Index(ip.String(), ".") != -1
 }
 
 func ByteViewLite(size int64) string {
@@ -158,7 +151,7 @@ func StringDiff(oldlist []string, newlist []string) ([]string, []string) {
 				break
 			}
 		}
-		if flag == false {
+		if !flag {
 			del = append(del, v1)
 		}
 	}
@@ -170,7 +163,7 @@ func StringDiff(oldlist []string, newlist []string) ([]string, []string) {
 				break
 			}
 		}
-		if flag == false {
+		if !flag {
 			add = append(add, v1)
 		}
 	}
@@ -181,8 +174,4 @@ func StringClone(list []string) []string {
 	output := make([]string, len(list))
 	copy(output, list)
 	return output
-}
-
-func init() {
-	mathrand.Seed(time.Now().Unix())
 }

@@ -2,29 +2,15 @@ package main
 
 import (
 	"fmt"
-	"time"
 
+	"github.com/easymesh/autoproxy-windows/engin"
 	"github.com/lxn/walk"
-	. "github.com/lxn/walk/declarative"
 )
 
-var defaultFont = Font{
-	PointSize: 14,
-	Bold:      true,
-}
-
-var LastUpdate time.Time
-
-func StatUpdate(requst, flowsize uint64) {
-	flowsizeStr := fmt.Sprintf("%s/s",
-		ByteView(int64(float64(flowsize))))
-
-	UpdateStatFlow(flowsizeStr)
-	NotifyUpdateFlow(flowsizeStr)
-}
-
-func StatInit() error {
-	return nil
+func StatUpdate(stat engin.StatInfo) {
+	UpdateStatFlow(
+		ByteView(stat.ForwardSize), fmt.Sprintf("%d", stat.SessionCnt), fmt.Sprintf("%d", stat.RequestCnt))
+	NotifyUpdateFlow(ByteView(stat.ForwardSize))
 }
 
 func StatRunningStatus(enable bool) {
