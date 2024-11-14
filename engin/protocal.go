@@ -2,7 +2,7 @@ package engin
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net"
 	"net/http"
 	"sync/atomic"
@@ -63,7 +63,6 @@ func (acc *HttpAccess) HttpsRoundTripper(w http.ResponseWriter, r *http.Request)
 	}
 
 	go func() {
-
 		atomic.AddInt64(&acc.stat.SessionCnt, 1)
 		defer atomic.AddInt64(&acc.stat.SessionCnt, -1)
 
@@ -75,7 +74,7 @@ func (acc *HttpAccess) HttpsRoundTripper(w http.ResponseWriter, r *http.Request)
 
 func (acc *HttpAccess) HttpRoundTripper(r *http.Request) (*http.Response, error) {
 	if r.Body != nil {
-		r.Body = ioutil.NopCloser(r.Body)
+		r.Body = io.NopCloser(r.Body)
 	}
 	return acc.HttpForward(Address(r.URL), r)
 }

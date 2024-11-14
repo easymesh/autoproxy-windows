@@ -49,36 +49,48 @@ func RemoteForwardUpdate() error {
 }
 
 func remoteUpdate() error {
-	list := RemoteList()
-	if len(list) == 0 {
-		logs.Warn("no remote proxy server.")
+	remoteList := ConfigGet().RemoteList
+	if len(remoteList) == 0 {
 		return nil
 	}
 
-	remote := RemoteList()[RemoteIndexGet()]
-	logs.Info("remote swtich config : %v", remote)
+	var remoteCurrent Remote
+	var find bool
+	for _, item := range remoteList {
+		if item.Name == ConfigGet().RemoteName {
+			remoteCurrent = item
+			find = true
+		}
+	}
+
+	if !find {
+		return fmt.Errorf("the remote proxy server not exist.")
+	}
+
+	logs.Info("ready switch to the remote server %v", remoteCurrent)
 
 	var tlsEnable bool
-	if strings.ToLower(remote.Protocal) == "https" {
+	if strings.ToLower(remoteCurrent.Protocol) == "https" {
 		tlsEnable = true
 	}
 
 	var auth *engin.AuthInfo
-	if remote.Auth {
-		auth = &engin.AuthInfo{User: remote.User, Token: remote.Password}
+	if remoteCurrent.Auth {
+		auth = &engin.AuthInfo{User: remoteCurrent.User, Token: remoteCurrent.Password}
 	}
 
-	forward, err := engin.NewHttpsProtcal(remote.Address, 60, auth, tlsEnable, "", "")
+	forward, err := engin.NewHttpsProtocol(remoteCurrent.Address, 60, auth, tlsEnable, "", "")
 	if err != nil {
 		logs.Error(err.Error())
 		return err
 	}
 
-	logs.Info("remote swtich to %s success", remote.Name)
+	logs.Info("switch to the remote server %s success", remoteCurrent.Name)
 
 	if RemoteForward != nil {
 		RemoteForward.Close()
 	}
+
 	RemoteForward = forward
 	return nil
 }
@@ -90,8 +102,8 @@ func modeUpdate() error {
 		return nil
 	}
 
-	mode := ModeOptionGet()
-	if mode != "local" && len(RemoteList()) == 0 {
+	mode := ConfigGet().Mode
+	if mode != "local" && len(ConfigGet().RemoteList) == 0 {
 		return fmt.Errorf("Please add remote proxy config.")
 	}
 
@@ -128,9 +140,12 @@ func ServerStart() error {
 		return fmt.Errorf("server has been start")
 	}
 
-	address := fmt.Sprintf("%s:%d",
-		IfaceOptions()[LocalIfaceOptionsIdx()],
-		PortOptionGet())
+	address := ConfigGet().Address
+	if strings.Index(address, ":") == -1 {
+		address = fmt.Sprintf("%s:%d", address, ConfigGet().Port)
+	} else {
+		address = fmt.Sprintf("[%s]:%d", address, ConfigGet().Port)
+	}
 
 	logs.Info("server start %s", address)
 
@@ -140,7 +155,7 @@ func ServerStart() error {
 		return err
 	}
 
-	LocalForward, _ = engin.NewDefault(60)
+	LocalForward = engin.NewDefault(60)
 
 	err = remoteUpdate()
 	if err != nil {

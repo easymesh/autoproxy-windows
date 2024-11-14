@@ -1,10 +1,7 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"os"
 	"sort"
 	"strings"
 	"sync"
@@ -78,41 +75,16 @@ func (m *DomainModel) Sort(col int, order walk.SortOrder) error {
 }
 
 var domainTable *DomainModel
-var domainList []string
-
-func DomainSave(list []string) error {
-	sort.Strings(list)
-	file := fmt.Sprintf("%s/domain.json", DEFAULT_HOME)
-	value, err := json.Marshal(list)
-	if err != nil {
-		logs.Error("json marshal domain list fail, %s", err.Error())
-		return err
-	}
-	return SaveToFile(file, value)
-}
-
-func DomainAdd(domain string) error {
-	for _, v := range domainList {
-		if v == domain {
-			return fmt.Errorf("domain %s exist", domain)
-		}
-	}
-	domainList = append(domainList, domain)
-	return DomainSave(domainList)
-}
-
-func DomainList() []string {
-	return domainList
-}
 
 func DomainTableUpdate(find string) {
 	item := make([]*DomainItem, 0)
-	for idx, v := range domainList {
-		if strings.Index(v, find) == -1 {
+	domainList := ConfigGet().DomainList
+	for i, value := range domainList {
+		if strings.Index(value, find) == -1 {
 			continue
 		}
 		item = append(item, &DomainItem{
-			Index: idx, Domain: v,
+			Index: i, Domain: value,
 		})
 	}
 	domainTable.items = item
@@ -120,76 +92,45 @@ func DomainTableUpdate(find string) {
 	domainTable.Sort(domainTable.sortColumn, domainTable.sortOrder)
 }
 
-func DomainInit() error {
-	domainTable = new(DomainModel)
-	domainTable.items = make([]*DomainItem, 0)
-
-	domainFile := fmt.Sprintf("%s/domain.json", DEFAULT_HOME)
-	_, err := os.Stat(domainFile)
-	if err != nil {
-		value, err := BoxFile().Bytes("default_domain.json")
-		if err != nil {
-			logs.Error("open default domain json file fail, %s", err.Error())
-			return err
-		}
-		err = SaveToFile(domainFile, value)
-		if err != nil {
-			logs.Error("default domain json save to app data dir fail, %s", err.Error())
-			return err
+func DomainAdd(domain string) error {
+	domainList := ConfigGet().DomainList
+	for _, v := range domainList {
+		if v == domain {
+			return fmt.Errorf("Domain %s already exists", domain)
 		}
 	}
-
-	value, err := ioutil.ReadFile(domainFile)
-	if err != nil {
-		logs.Error("read domain json file from app data dir fail, %s", err.Error())
-		return err
-	}
-
-	var output []string
-	err = json.Unmarshal(value, &output)
-	if err != nil {
-		logs.Error("json unmarshal domain json fail, %s", err.Error())
-		return err
-	}
-
-	domainList = output
-	return nil
+	domainList = append(domainList, domain)
+	sort.Strings(domainList)
+	return DomainListSave(domainList)
 }
 
 func DomainDelete(owner *walk.Dialog) error {
+	var remainderList []string
 	var deleteList []string
 	for _, v := range domainTable.items {
-		if v.checked {
+		if !v.checked {
+			remainderList = append(remainderList, v.Domain)
+		} else {
 			deleteList = append(deleteList, v.Domain)
 		}
 	}
 	if len(deleteList) == 0 {
-		return fmt.Errorf("No choice any object")
+		return fmt.Errorf("No choice any domain")
 	}
 
-	var remanderList []string
-	for _, v := range domainList {
-		var exist bool
-		for _, v2 := range deleteList {
-			if v == v2 {
-				exist = true
-				break
-			}
-		}
-		if !exist {
-			remanderList = append(remanderList, v)
-		}
+	err := DomainListSave(remainderList)
+	if err != nil {
+		ErrorBoxAction(owner, fmt.Sprintf("%v %s", deleteList, "Delete Fail"))
+	} else {
+		InfoBoxAction(owner, fmt.Sprintf("%v %s", deleteList, "Delete Success"))
 	}
-
-	domainList = remanderList
-	DomainSave(remanderList)
-
-	InfoBoxAction(owner, fmt.Sprintf("%v %s", deleteList, "Delete Success"))
-
-	return nil
+	return err
 }
 
 func RemodeEdit() {
+	domainTable = new(DomainModel)
+	domainTable.items = make([]*DomainItem, 0)
+
 	DomainTableUpdate("")
 
 	var dlg *walk.Dialog
@@ -227,20 +168,20 @@ func RemodeEdit() {
 								ErrorBoxAction(dlg, "Input Domain")
 								return
 							}
+
 							err := DomainAdd(addDomain)
 							if err != nil {
 								ErrorBoxAction(dlg, err.Error())
 								return
 							}
 
-							go func() {
-								InfoBoxAction(dlg, addDomain+" add success")
-							}()
-
 							addLine.SetText("")
 							findLine.SetText("")
 							DomainTableUpdate("")
 							RouteUpdate()
+
+							InfoBoxAction(dlg, addDomain+" add success")
+							return
 						},
 					},
 					Label{

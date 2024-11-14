@@ -25,7 +25,7 @@ func main() {
 		logs.Error(err.Error())
 		return
 	}
-	err = DomainInit()
+	err = ConfigInit()
 	if err != nil {
 		logs.Error(err.Error())
 		return

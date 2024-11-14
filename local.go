@@ -11,47 +11,41 @@ type Options struct {
 	Detail string
 }
 
+var modeOptions = []*Options{
+	{"local", "Local Forward"},
+	{"auto", "Auto Forward"},
+	{"proxy", "Global Forward"},
+}
+
 func ModeOptions() []*Options {
-	return []*Options{
-		{"local", "Local Forward"},
-		{"auto", "Auto Forward"},
-		{"proxy", "Global Forward"},
-	}
+	return modeOptions
 }
 
 func ModeOptionGet() string {
-	return ModeOptions()[ModeOptionsIdx()].Name
+	return ConfigGet().Mode
 }
 
 func ModeOptionsIdx() int {
-	return int(DataIntValueGet("LocalMode"))
+	mode := ConfigGet().Mode
+	for i, opt := range modeOptions {
+		if opt.Name == mode {
+			return i
+		}
+	}
+	return 0
 }
 
 func ModeOptionsSet(idx int) {
-	err := DataIntValueSet("LocalMode", uint32(idx))
-	if err != nil {
-		logs.Error(err.Error())
-	}
-}
-
-func PortOptionGet() int {
-	value := DataIntValueGet("LocalPort")
-	if value == 0 {
-		value = 8080
-	}
-	return int(value)
-}
-
-func PortOptionSet(value int) {
-	err := DataIntValueSet("LocalPort", uint32(value))
-	if err != nil {
-		logs.Error(err.Error())
+	for i, opt := range modeOptions {
+		if idx == i {
+			ModeSave(opt.Name)
+			return
+		}
 	}
 }
 
 func IfaceOptions() []string {
 	output := []string{"0.0.0.0", "::"}
-
 	ifaces, err := net.Interfaces()
 	if err != nil {
 		logs.Error(err.Error())
@@ -70,22 +64,4 @@ func IfaceOptions() []string {
 		}
 	}
 	return output
-}
-
-func LocalIfaceOptionsIdx() int {
-	ifaces := IfaceOptions()
-	ifaceName := DataStringValueGet("LocalIface")
-	for idx, v := range ifaces {
-		if v == ifaceName {
-			return idx
-		}
-	}
-	return 0
-}
-
-func LocalIfaceOptionsSet(ifaceName string) {
-	err := DataStringValueSet("LocalIface", ifaceName)
-	if err != nil {
-		logs.Error(err.Error())
-	}
 }

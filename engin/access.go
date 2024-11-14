@@ -216,7 +216,7 @@ func NewHttpsAccess(addr string, timeout int, tlsEnable bool, certfile, keyfile 
 	acc := new(HttpAccess)
 	acc.Address = addr
 	acc.Timeout = timeout
-	acc.defaultForward, _ = NewDefault(timeout)
+	acc.defaultForward = NewDefault(timeout)
 
 	tmout := time.Duration(timeout) * time.Second
 

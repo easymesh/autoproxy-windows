@@ -7,8 +7,17 @@ import (
 
 var DEFAULT_HOME string
 
-func logDirGet() string {
+func RunlogDirGet() string {
 	dir := fmt.Sprintf("%s\\runlog", DEFAULT_HOME)
+	_, err := os.Stat(dir)
+	if err != nil {
+		os.MkdirAll(dir, 644)
+	}
+	return dir
+}
+
+func ConfigDirGet() string {
+	dir := fmt.Sprintf("%s\\config", DEFAULT_HOME)
 	_, err := os.Stat(dir)
 	if err != nil {
 		os.MkdirAll(dir, 644)

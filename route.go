@@ -18,7 +18,7 @@ var routeCtrl *RouteCtrl
 func RouteInit() error {
 	routeCtrl = new(RouteCtrl)
 	routeCtrl.cache = make(map[string]string, 2048)
-	routeCtrl.domain = StringClone(DomainList())
+	routeCtrl.domain = StringClone(ConfigGet().DomainList)
 	return nil
 }
 
@@ -64,7 +64,7 @@ func RouteUpdate() {
 	routeCtrl.Lock()
 	defer routeCtrl.Unlock()
 
-	newList := StringClone(DomainList())
+	newList := StringClone(ConfigGet().DomainList)
 	oldList := routeCtrl.domain
 
 	delList, addList := StringDiff(oldList, newList)

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -14,89 +13,9 @@ import (
 	. "github.com/lxn/walk/declarative"
 )
 
-type RemoteItem struct {
-	Name     string
-	Address  string
-	Protocal string
-	Auth     bool
-	User     string
-	Password string
-}
-
-func TestUrlGet() string {
-	url := DataStringValueGet("remotetest")
-	if url == "" {
-		url = "https://google.com"
-	}
-	return url
-}
-
-func TestUrlSet(url string) {
-	DataStringValueSet("remotetest", url)
-}
-
-var remoteCache []RemoteItem
-
-func remoteGet() []RemoteItem {
-	if remoteCache == nil {
-		list := make([]RemoteItem, 0)
-		value := DataStringValueGet("remotelist")
-		if value != "" {
-			err := json.Unmarshal([]byte(value), &list)
-			if err != nil {
-				logs.Error("json marshal fail", err.Error())
-			}
-		}
-		remoteCache = list
-	}
-	return remoteCache
-}
-
-func remoteSync() {
-	value, err := json.Marshal(remoteCache)
-	if err != nil {
-		logs.Error("json marshal fail", err.Error())
-	} else {
-		DataStringValueSet("remotelist", string(value))
-	}
-}
-
-func RemoteIndexSet(name string) {
-	err := DataStringValueSet("remoteIndex", name)
-	if err != nil {
-		logs.Error(err.Error())
-	}
-}
-
-func RemoteIndexGet() int {
-	name := DataStringValueGet("remoteIndex")
-	list := remoteGet()
-	for idx, v := range list {
-		if v.Name == name {
-			return idx
-		}
-	}
-	return 0
-}
-
-func RemoteCurName() string {
-	name := DataStringValueGet("remoteIndex")
-	list := remoteGet()
-	for _, v := range list {
-		if v.Name == name {
-			return v.Name
-		}
-	}
-	return list[0].Name
-}
-
-func RemoteList() []RemoteItem {
-	return remoteGet()
-}
-
-func RemoteOptions() []string {
+func remoteOptions() []string {
 	var output []string
-	list := remoteGet()
+	list := ConfigGet().RemoteList
 	for _, v := range list {
 		output = append(output, v.Name)
 	}
@@ -106,58 +25,68 @@ func RemoteOptions() []string {
 	return output
 }
 
-func RemoteFind(name string) RemoteItem {
-	list := remoteGet()
+func remoteIndex() int {
+	remote := ConfigGet().RemoteName
+	list := ConfigGet().RemoteList
+	for i, v := range list {
+		if v.Name == remote {
+			return i
+		}
+	}
+	return 0
+}
+
+func remoteFind(name string) Remote {
+	list := ConfigGet().RemoteList
 	for _, v := range list {
 		if v.Name == name {
 			return v
 		}
 	}
-	return RemoteItem{
-		Name: name, Protocal: "HTTPS",
+	return Remote{
+		Name: name, Protocol: "HTTPS",
 	}
 }
 
-func RemoteGet() RemoteItem {
-	list := remoteGet()
-	if len(list) > 0 {
-		return list[0]
-	}
-	return RemoteItem{
-		Protocal: "HTTPS",
-	}
-}
-
-func RemoteDelete(name string) {
-	defer remoteSync()
-	for i, v := range remoteCache {
+func remoteDelete(name string) {
+	remoteList := ConfigGet().RemoteList
+	for i, v := range remoteList {
 		if v.Name == name {
-			remoteCache = append(remoteCache[:i], remoteCache[i+1:]...)
-			return
+			remoteList = append(remoteList[:i], remoteList[i+1:]...)
 		}
 	}
+	RemoteListSave(remoteList)
 }
 
-func RemoteUpdate(item RemoteItem) {
-	defer remoteSync()
-	for i, v := range remoteCache {
+func remoteListUpdate(item Remote) {
+	remoteList := ConfigGet().RemoteList
+
+	for i, v := range remoteList {
 		if v.Name == item.Name {
-			remoteCache[i] = item
+			remoteList[i] = item
+			RemoteListSave(remoteList)
 			return
 		}
 	}
-	remoteCache = append(remoteCache, item)
+	remoteList = append(remoteList, item)
+	RemoteListSave(remoteList)
 }
 
-func ProtocalOptions() []string {
+func protocolOptions() []string {
 	return []string{
 		"HTTP", "HTTPS",
 	}
 }
 
-var curRemoteItem RemoteItem
+func protocolIndex(protocol string) int {
+	if protocol == "HTTP" {
+		return 0
+	} else {
+		return 1
+	}
+}
 
-func TestEngin(testhttps string, item *RemoteItem) (time.Duration, error) {
+func TestEngin(testhttps string, item *Remote) (time.Duration, error) {
 	now := time.Now()
 	if !engin.IsConnect(item.Address, 5) {
 		return 0, fmt.Errorf("remote address connnect %s fail", item.Address)
@@ -178,11 +107,11 @@ func TestEngin(testhttps string, item *RemoteItem) (time.Duration, error) {
 	}
 
 	var tls bool
-	if strings.ToLower(item.Protocal) == "https" {
+	if strings.ToLower(item.Protocol) == "https" {
 		tls = true
 	}
 
-	forward, err := engin.NewHttpsProtcal(item.Address, 10, auth, tls, "", "")
+	forward, err := engin.NewHttpsProtocol(item.Address, 10, auth, tls, "", "")
 	if err != nil {
 		logs.Error("new remote http proxy fail, %s", err.Error())
 		return 0, err
@@ -208,29 +137,31 @@ func TestEngin(testhttps string, item *RemoteItem) (time.Duration, error) {
 		return 0, err
 	}
 
-	return time.Now().Sub(now), nil
+	return time.Since(now), nil
 }
 
-var remoteDlg *walk.Dialog
-
 func RemoteServer() {
+	var remoteDlg *walk.Dialog
 	var acceptPB, cancelPB *walk.PushButton
-
-	var remote, protocal *walk.ComboBox
+	var remote, protocol *walk.ComboBox
 	var auth *walk.RadioButton
 	var user, passwd, address, testurl *walk.LineEdit
-	var testbut *walk.PushButton
+	var testButton *walk.PushButton
+	var remoteCurrent Remote
 
-	curRemoteItem = RemoteGet()
+	remoteList := ConfigGet().RemoteList
+	if len(remoteList) > 0 {
+		remoteCurrent = remoteList[0]
+	}
 
-	updateHandler := func() {
-		protocal.SetText(curRemoteItem.Protocal)
-		address.SetText(curRemoteItem.Address)
-		auth.SetChecked(curRemoteItem.Auth)
-		user.SetEnabled(curRemoteItem.Auth)
-		passwd.SetEnabled(curRemoteItem.Auth)
-		user.SetText(curRemoteItem.User)
-		passwd.SetText(curRemoteItem.Password)
+	var updateHandler = func() {
+		protocol.SetCurrentIndex(protocolIndex(remoteCurrent.Protocol))
+		address.SetText(remoteCurrent.Address)
+		auth.SetChecked(remoteCurrent.Auth)
+		user.SetEnabled(remoteCurrent.Auth)
+		passwd.SetEnabled(remoteCurrent.Auth)
+		user.SetText(remoteCurrent.User)
+		passwd.SetText(remoteCurrent.Password)
 	}
 
 	_, err := Dialog{
@@ -253,17 +184,17 @@ func RemoteServer() {
 						AssignTo:     &remote,
 						Editable:     true,
 						CurrentIndex: 0,
-						Model:        RemoteOptions(),
+						Model:        remoteOptions(),
 						OnBoundsChanged: func() {
-							curRemoteItem = RemoteFind(remote.Text())
+							remoteCurrent = remoteFind(remote.Text())
 							updateHandler()
 						},
 						OnCurrentIndexChanged: func() {
-							curRemoteItem = RemoteFind(remote.Text())
+							remoteCurrent = remoteFind(remote.Text())
 							updateHandler()
 						},
 						OnEditingFinished: func() {
-							curRemoteItem = RemoteFind(remote.Text())
+							remoteCurrent = remoteFind(remote.Text())
 							updateHandler()
 						},
 					},
@@ -273,39 +204,39 @@ func RemoteServer() {
 					},
 
 					LineEdit{
-						AssignTo: &address,
-						Text:     curRemoteItem.Address,
+						AssignTo:    &address,
+						Text:        remoteCurrent.Address,
+						ToolTipText: "192.168.1.3:8080",
 						OnEditingFinished: func() {
-							curRemoteItem.Address = address.Text()
+							remoteCurrent.Address = address.Text()
 						},
 					},
 
 					Label{
-						Text: "Remote Protocal: ",
+						Text: "Remote protocol: ",
 					},
 					ComboBox{
-						AssignTo: &protocal,
-						Model:    ProtocalOptions(),
-						Value:    curRemoteItem.Protocal,
+						AssignTo:     &protocol,
+						Model:        protocolOptions(),
+						CurrentIndex: protocolIndex(remoteCurrent.Protocol),
 						OnCurrentIndexChanged: func() {
-							curRemoteItem.Protocal = protocal.Text()
+							remoteCurrent.Protocol = protocol.Text()
 						},
 					},
-
 					Label{
 						Text: "Auth: ",
 					},
 					RadioButton{
 						AssignTo: &auth,
 						OnBoundsChanged: func() {
-							auth.SetChecked(curRemoteItem.Auth)
+							auth.SetChecked(remoteCurrent.Auth)
 						},
 						OnClicked: func() {
-							auth.SetChecked(!curRemoteItem.Auth)
-							curRemoteItem.Auth = !curRemoteItem.Auth
+							auth.SetChecked(!remoteCurrent.Auth)
+							remoteCurrent.Auth = !remoteCurrent.Auth
 
-							user.SetEnabled(curRemoteItem.Auth)
-							passwd.SetEnabled(curRemoteItem.Auth)
+							user.SetEnabled(remoteCurrent.Auth)
+							passwd.SetEnabled(remoteCurrent.Auth)
 						},
 					},
 					Label{
@@ -313,32 +244,30 @@ func RemoteServer() {
 					},
 					LineEdit{
 						AssignTo: &user,
-						Text:     curRemoteItem.User,
-						Enabled:  curRemoteItem.Auth,
+						Text:     remoteCurrent.User,
+						Enabled:  remoteCurrent.Auth,
 						OnEditingFinished: func() {
-							curRemoteItem.User = user.Text()
+							remoteCurrent.User = user.Text()
 						},
 					},
-
 					Label{
 						Text: "Password: ",
 					},
 					LineEdit{
 						AssignTo: &passwd,
-						Text:     curRemoteItem.Password,
-						Enabled:  curRemoteItem.Auth,
+						Text:     remoteCurrent.Password,
+						Enabled:  remoteCurrent.Auth,
 						OnEditingFinished: func() {
-							curRemoteItem.Password = passwd.Text()
+							remoteCurrent.Password = passwd.Text()
 						},
 					},
-
 					PushButton{
-						AssignTo: &testbut,
+						AssignTo: &testButton,
 						Text:     "Testing",
 						OnClicked: func() {
 							go func() {
-								testbut.SetEnabled(false)
-								delay, err := TestEngin(testurl.Text(), &curRemoteItem)
+								testButton.SetEnabled(false)
+								delay, err := TestEngin(testurl.Text(), &remoteCurrent)
 								if err != nil {
 									ErrorBoxAction(remoteDlg, err.Error())
 								} else {
@@ -347,16 +276,15 @@ func RemoteServer() {
 										"Delay", delay/time.Millisecond)
 									InfoBoxAction(remoteDlg, info)
 								}
-								testbut.SetEnabled(true)
+								testButton.SetEnabled(true)
 							}()
 						},
 					},
-
 					LineEdit{
 						AssignTo: &testurl,
-						Text:     TestUrlGet(),
+						Text:     ConfigGet().TestUrl,
 						OnEditingFinished: func() {
-							TestUrlSet(testurl.Text())
+							TestUrlSave(testurl.Text())
 						},
 					},
 				},
@@ -368,17 +296,17 @@ func RemoteServer() {
 						AssignTo: &acceptPB,
 						Text:     "Save",
 						OnClicked: func() {
-							if curRemoteItem.Auth {
-								if curRemoteItem.User == "" || curRemoteItem.Password == "" {
+							if remoteCurrent.Auth {
+								if remoteCurrent.User == "" || remoteCurrent.Password == "" {
 									ErrorBoxAction(remoteDlg, "Please input user and passwd")
 									return
 								}
 							}
-							if curRemoteItem.Name == "" || curRemoteItem.Address == "" {
+							if remoteCurrent.Name == "" || remoteCurrent.Address == "" {
 								ErrorBoxAction(remoteDlg, "Please input name and address")
 								return
 							}
-							RemoteUpdate(curRemoteItem)
+							remoteListUpdate(remoteCurrent)
 							remoteDlg.Accept()
 							ConsoleRemoteUpdate()
 						},
@@ -387,9 +315,17 @@ func RemoteServer() {
 						AssignTo: &cancelPB,
 						Text:     "Delete",
 						OnClicked: func() {
-							RemoteDelete(curRemoteItem.Name)
-							remote.SetModel(RemoteOptions())
-							remote.SetCurrentIndex(RemoteIndexGet())
+							remoteDelete(remoteCurrent.Name)
+
+							remoteList := ConfigGet().RemoteList
+							if len(remoteList) > 0 {
+								remoteCurrent = remoteList[0]
+							}
+
+							remote.SetModel(remoteOptions())
+							remote.SetCurrentIndex(0)
+							updateHandler()
+
 							ConsoleRemoteUpdate()
 						},
 					},

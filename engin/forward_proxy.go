@@ -110,7 +110,7 @@ func (d *httpsProtocal) Close() error {
 	return nil
 }
 
-func NewHttpsProtcal(address string, timeout int, auth *AuthInfo, tlsEnable bool, certfile, keyfile string) (Forward, error) {
+func NewHttpsProtocol(address string, timeout int, auth *AuthInfo, tlsEnable bool, certfile, keyfile string) (Forward, error) {
 	var config *tls.Config
 
 	if tlsEnable {

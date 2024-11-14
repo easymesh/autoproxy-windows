@@ -10,8 +10,8 @@ import (
 
 var mainWindow *walk.MainWindow
 
-var mainWindowWidth = 400
-var mainWindowHeight = 180
+var mainWindowWidth = 250
+var mainWindowHeight = 170
 
 func waitWindows() {
 	for {
@@ -56,6 +56,7 @@ func mainWindows() {
 		MinSize:        Size{mainWindowWidth, mainWindowHeight - 1},
 		Size:           Size{mainWindowWidth, mainWindowHeight - 1},
 		Layout:         VBox{Margins: Margins{Top: 10, Bottom: 10, Left: 10, Right: 10}},
+		Font:           Font{Bold: true},
 		MenuItems:      MenuBarInit(),
 		StatusBarItems: StatusBarInit(),
 		Children: []Widget{

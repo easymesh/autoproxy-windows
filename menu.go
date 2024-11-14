@@ -10,15 +10,21 @@ func MenuBarInit() []MenuItem {
 			Text: "Setting",
 			Items: []MenuItem{
 				Action{
-					Text: "Auto Startup",
+					Text: "Domain Setting",
 					OnTriggered: func() {
-						BaseSetting()
+						RemodeEdit()
+					},
+				},
+				Action{
+					Text: "Proxy Setting",
+					OnTriggered: func() {
+						RemoteServer()
 					},
 				},
 				Action{
 					Text: "Runlog",
 					OnTriggered: func() {
-						OpenBrowserWeb(logDirGet())
+						OpenBrowserWeb(RunlogDirGet())
 					},
 				},
 				Separator{},
@@ -28,18 +34,6 @@ func MenuBarInit() []MenuItem {
 						CloseWindows()
 					},
 				},
-			},
-		},
-		Action{
-			Text: "Domain",
-			OnTriggered: func() {
-				RemodeEdit()
-			},
-		},
-		Action{
-			Text: "Proxy",
-			OnTriggered: func() {
-				RemoteServer()
 			},
 		},
 		Action{
