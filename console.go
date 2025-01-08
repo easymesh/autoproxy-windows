@@ -87,7 +87,7 @@ func ConsoleWidget() []Widget {
 			}
 			time.Sleep(100 * time.Millisecond)
 		}
-		if len(ConfigGet().RemoteList) > 0 || ConfigGet().Mode == "local" {
+		if len(ConfigGet().RemoteList) > 0 || ConfigGet().Mode == ModeLocal {
 			activeFunc()
 		}
 	}()
@@ -121,19 +121,18 @@ func ConsoleWidget() []Widget {
 			},
 		},
 		Label{
-			Text: "Proxy Mode: ",
+			Text: "Run Mode: ",
 		},
 		ComboBox{
-			AssignTo:      &consoleMode,
-			BindingMember: "Name",
-			DisplayMember: "Detail",
-			CurrentIndex:  ModeOptionsIdx(),
-			Model:         ModeOptions(),
+			AssignTo:     &consoleMode,
+			CurrentIndex: ModeOptionsIdx(),
+			Model:        ModeOptions(),
 			OnCurrentIndexChanged: func() {
 				ModeOptionsSet(consoleMode.CurrentIndex())
-				go func() {
-					ModeUpdate()
-				}()
+				err := ModeUpdate()
+				if err != nil {
+					ErrorBoxAction(mainWindow, err.Error())
+				}
 			},
 		},
 		Label{

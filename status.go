@@ -11,7 +11,7 @@ var requestFlow *walk.StatusBarItem
 
 func UpdateStatFlow(speed string, session string, request string) {
 	if statusFlow != nil {
-		statusFlow.SetText("DataFlow: " + speed)
+		statusFlow.SetText("Flow: " + speed)
 		requestFlow.SetText("Request: " + request)
 		sessionFlow.SetText("Session: " + session)
 	}
@@ -29,7 +29,7 @@ func StatusBarInit() []StatusBarItem {
 			AssignTo: &statusFlow,
 			Icon:     ICON_Network_Disable,
 			Text:     "",
-			Width:    120,
+			Width:    100,
 		},
 		{
 			AssignTo: &sessionFlow,

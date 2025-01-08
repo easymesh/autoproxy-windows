@@ -16,41 +16,10 @@ func OpenBrowserWeb(url string) {
 	}
 }
 
-var image1 walk.Image
-var image2 walk.Image
-
-func LoadImage(name string) walk.Image {
-	body, err := BoxFile().Bytes(name)
-	if err != nil {
-		logs.Error(err.Error())
-		return nil
-	}
-	file := DEFAULT_HOME + "\\" + name
-	err = SaveToFile(file, body)
-	if err != nil {
-		logs.Error(err.Error())
-		return nil
-	}
-	image, err := walk.NewImageFromFile(file)
-	if err != nil {
-		logs.Error(err.Error())
-		return nil
-	}
-	return image
-}
-
 func AboutAction() {
 	var ok *walk.PushButton
 	var about *walk.Dialog
 	var err error
-
-	if image1 == nil {
-		image1 = LoadImage("sponsor1.jpg")
-	}
-
-	if image2 == nil {
-		image2 = LoadImage("sponsor2.jpg")
-	}
 
 	_, err = Dialog{
 		AssignTo:      &about,
@@ -60,36 +29,18 @@ func AboutAction() {
 		DefaultButton: &ok,
 		Layout:        VBox{},
 		Children: []Widget{
-			Composite{
-				Layout: HBox{},
-				Children: []Widget{
-					HSpacer{
-						MinSize: Size{Width: 10},
-					},
-					ImageView{
-						ToolTipText: "Alipay",
-						Image:       image1,
-						MaxSize:     Size{80, 80},
-					},
-					HSpacer{
-						MinSize: Size{Width: 10},
-					},
-					ImageView{
-						ToolTipText: "WecartPay",
-						Image:       image2,
-						MaxSize:     Size{80, 80},
-					},
-					HSpacer{
-						MinSize: Size{Width: 10},
-					},
-				},
+			VSpacer{},
+			Label{
+				Text: "",
 			},
+			VSpacer{},
 			PushButton{
 				Text: "paypal.me",
 				OnClicked: func() {
 					OpenBrowserWeb("https://paypal.me/lixiangyun")
 				},
 			},
+			VSpacer{},
 			PushButton{
 				Text:      "OK",
 				OnClicked: func() { about.Cancel() },

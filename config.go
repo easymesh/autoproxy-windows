@@ -9,6 +9,15 @@ import (
 	"github.com/astaxie/beego/logs"
 )
 
+type ModeType int
+
+const (
+	ModeLocal ModeType = iota
+	ModeDomain
+	ModeAuto
+	ModeProxy
+)
+
 type Remote struct {
 	Name     string `json:"name"`
 	Address  string `json:"address"`
@@ -21,7 +30,7 @@ type Remote struct {
 type Config struct {
 	Address    string   `json:"address"`
 	Port       int      `json:"port"`
-	Mode       string   `json:"mode"`
+	Mode       ModeType `json:"mode"` // 0: local, 1: domain, 2: auto, 3: proxy
 	TestUrl    string   `json:"testUrl"`
 	RemoteName string   `json:"remote"`
 	RemoteList []Remote `json:"remoteList"`
@@ -31,7 +40,7 @@ type Config struct {
 var configCache = Config{
 	Address:    "0.0.0.0",
 	Port:       8080,
-	Mode:       "local",
+	Mode:       ModeLocal,
 	TestUrl:    "https://google.com/",
 	RemoteName: "",
 	DomainList: make([]string, 0),
@@ -67,7 +76,7 @@ func RemoteListSave(remote []Remote) error {
 	return configSyncToFile()
 }
 
-func ModeSave(mode string) error {
+func ModeSave(mode ModeType) error {
 	configCache.Mode = mode
 	return configSyncToFile()
 }
@@ -92,35 +101,31 @@ func ListenPortSave(port int) error {
 	return configSyncToFile()
 }
 
-func ConfigInit() error {
+func ConfigInit() {
 	configFilePath = fmt.Sprintf("%s%c%s", ConfigDirGet(), os.PathSeparator, "config.json")
 
 	_, err := os.Stat(configFilePath)
 	if err != nil {
-		value, err := json.Marshal(configCache)
-		if err != nil {
-			logs.Error("json marshal config fail, %s", err.Error())
-			return err
-		}
-
-		err = SaveToFile(configFilePath, value)
+		err = configSyncToFile()
 		if err != nil {
 			logs.Error("default config save to app data dir fail, %s", err.Error())
-			return err
+			return
 		}
 	}
 
 	value, err := os.ReadFile(configFilePath)
 	if err != nil {
 		logs.Error("read config file from app data dir fail, %s", err.Error())
-		return err
+		configSyncToFile()
+		return
 	}
 
-	err = json.Unmarshal(value, &configCache)
+	var config Config
+	err = json.Unmarshal(value, &config)
 	if err != nil {
 		logs.Error("json unmarshal config fail, %s", err.Error())
-		return err
+		configSyncToFile()
 	}
 
-	return nil
+	configCache = config
 }

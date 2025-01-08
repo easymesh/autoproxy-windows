@@ -33,9 +33,17 @@ func ProxyForwardFunc(address string, r *http.Request) engin.Forward {
 	return RemoteForward
 }
 
-func AutoForwardFunc(address string, r *http.Request) engin.Forward {
+func DomainForwardFunc(address string, r *http.Request) engin.Forward {
 	if RouteCheck(address) {
-		logs.Info("%s auto forward to remote proxy", address)
+		logs.Info("match %s domain and forward to remote proxy", address)
+		return RemoteForward
+	}
+	return LocalForward
+}
+
+func AutoForwardFunc(address string, r *http.Request) engin.Forward {
+	if AutoCheck(address) {
+		logs.Info("auto connect check %s and forward to remote proxy", address)
 		return RemoteForward
 	}
 	return LocalForward
@@ -64,7 +72,7 @@ func remoteUpdate() error {
 	}
 
 	if !find {
-		return fmt.Errorf("the remote proxy server not exist.")
+		return fmt.Errorf("the remote proxy server does not exist")
 	}
 
 	logs.Info("ready switch to the remote server %v", remoteCurrent)
@@ -81,7 +89,7 @@ func remoteUpdate() error {
 
 	forward, err := engin.NewHttpsProtocol(remoteCurrent.Address, 60, auth, tlsEnable, "", "")
 	if err != nil {
-		logs.Error(err.Error())
+		logs.Error("new remote http proxy fail, %s", err.Error())
 		return err
 	}
 
@@ -103,19 +111,20 @@ func modeUpdate() error {
 	}
 
 	mode := ConfigGet().Mode
-	if mode != "local" && len(ConfigGet().RemoteList) == 0 {
-		return fmt.Errorf("Please add remote proxy config.")
-	}
 
 	logs.Info("mode switch to %s", mode)
 
 	switch mode {
-	case "auto":
-		acc.ForwardHandlerSet(AutoForwardFunc)
-	case "proxy":
-		acc.ForwardHandlerSet(ProxyForwardFunc)
-	case "local":
+	case ModeLocal:
 		acc.ForwardHandlerSet(LocalForwardFunc)
+	case ModeDomain:
+		acc.ForwardHandlerSet(DomainForwardFunc)
+	case ModeAuto:
+		acc.ForwardHandlerSet(AutoForwardFunc)
+	case ModeProxy:
+		acc.ForwardHandlerSet(ProxyForwardFunc)
+	default:
+		return fmt.Errorf("mode %d not support", mode)
 	}
 
 	logs.Info("server mode switch to %s success", mode)
@@ -141,7 +150,7 @@ func ServerStart() error {
 	}
 
 	address := ConfigGet().Address
-	if strings.Index(address, ":") == -1 {
+	if !strings.Contains(address, ":") {
 		address = fmt.Sprintf("%s:%d", address, ConfigGet().Port)
 	} else {
 		address = fmt.Sprintf("[%s]:%d", address, ConfigGet().Port)

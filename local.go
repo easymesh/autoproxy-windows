@@ -6,49 +6,32 @@ import (
 	"github.com/astaxie/beego/logs"
 )
 
-type Options struct {
-	Name   string
-	Detail string
-}
-
-var modeOptions = []*Options{
-	{"local", "Local Forward"},
-	{"auto", "Auto Forward"},
-	{"proxy", "Global Forward"},
-}
-
-func ModeOptions() []*Options {
-	return modeOptions
-}
-
-func ModeOptionGet() string {
-	return ConfigGet().Mode
+func ModeOptions() []string {
+	return []string{
+		"Full Local Proxy",
+		"Match Domain Proxy",
+		"Auto Connect Proxy",
+		"Full Remote Proxy",
+	}
 }
 
 func ModeOptionsIdx() int {
 	mode := ConfigGet().Mode
-	for i, opt := range modeOptions {
-		if opt.Name == mode {
-			return i
-		}
+	if int(mode) < len(ModeOptions()) {
+		return int(mode)
 	}
 	return 0
 }
 
 func ModeOptionsSet(idx int) {
-	for i, opt := range modeOptions {
-		if idx == i {
-			ModeSave(opt.Name)
-			return
-		}
-	}
+	ModeSave(ModeType(idx))
 }
 
 func IfaceOptions() []string {
 	output := []string{"0.0.0.0", "::"}
 	ifaces, err := net.Interfaces()
 	if err != nil {
-		logs.Error(err.Error())
+		logs.Error("get interfaces fail, %s", err.Error())
 		return output
 	}
 	for _, v := range ifaces {

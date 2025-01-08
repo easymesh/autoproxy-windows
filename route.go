@@ -15,11 +15,10 @@ type RouteCtrl struct {
 
 var routeCtrl *RouteCtrl
 
-func RouteInit() error {
+func RouteInit() {
 	routeCtrl = new(RouteCtrl)
 	routeCtrl.cache = make(map[string]string, 2048)
 	routeCtrl.domain = StringClone(ConfigGet().DomainList)
-	return nil
 }
 
 func AddressToDomain(address string) string {

@@ -49,7 +49,12 @@ func NotifyInit() {
 		return
 	}
 
-	err = notify.SetIcon(ICON_Network_Disable)
+	if ServerRunning() {
+		err = notify.SetIcon(ICON_Network_Enable)
+	} else {
+		err = notify.SetIcon(ICON_Network_Disable)
+	}
+
 	if err != nil {
 		logs.Error("set notify icon fail, %s", err.Error())
 		return

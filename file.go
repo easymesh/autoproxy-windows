@@ -1,26 +1,26 @@
 package main
 
 import (
-	"fmt"
 	"os"
+	"path/filepath"
 )
 
 var DEFAULT_HOME string
 
 func RunlogDirGet() string {
-	dir := fmt.Sprintf("%s\\runlog", DEFAULT_HOME)
+	dir := filepath.Join(DEFAULT_HOME, "runlog")
 	_, err := os.Stat(dir)
 	if err != nil {
-		os.MkdirAll(dir, 644)
+		os.MkdirAll(dir, 0644)
 	}
 	return dir
 }
 
 func ConfigDirGet() string {
-	dir := fmt.Sprintf("%s\\config", DEFAULT_HOME)
+	dir := filepath.Join(DEFAULT_HOME, "config")
 	_, err := os.Stat(dir)
 	if err != nil {
-		os.MkdirAll(dir, 644)
+		os.MkdirAll(dir, 0644)
 	}
 	return dir
 }
@@ -33,28 +33,16 @@ func appDataDir() string {
 	if datadir == "" {
 		datadir = ".\\"
 	} else {
-		datadir = fmt.Sprintf("%s\\Autoproxy", datadir)
+		datadir = filepath.Join(datadir, "Autoproxy")
 	}
 	return datadir
 }
 
-func appDataDirInit() error {
+func FileInit() {
 	dir := appDataDir()
 	_, err := os.Stat(dir)
 	if err != nil {
-		err = os.MkdirAll(dir, 644)
-		if err != nil {
-			return err
-		}
+		os.MkdirAll(dir, 0644)
 	}
 	DEFAULT_HOME = dir
-	return nil
-}
-
-func FileInit() error {
-	err := appDataDirInit()
-	if err != nil {
-		return err
-	}
-	return nil
 }

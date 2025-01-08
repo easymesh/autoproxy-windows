@@ -10,22 +10,6 @@ import (
 
 var mainWindow *walk.MainWindow
 
-var mainWindowWidth = 250
-var mainWindowHeight = 170
-
-func waitWindows() {
-	for {
-		if mainWindow != nil && mainWindow.Visible() {
-			mainWindow.SetSize(walk.Size{
-				mainWindowWidth,
-				mainWindowHeight})
-			break
-		}
-		time.Sleep(100 * time.Millisecond)
-	}
-	NotifyInit()
-}
-
 func MainWindowsClose() {
 	if mainWindow != nil {
 		mainWindow.Close()
@@ -33,15 +17,10 @@ func MainWindowsClose() {
 	}
 }
 
-func statusUpdate() {
-	StatUpdate(StatGet())
-}
-
 func init() {
 	go func() {
-		waitWindows()
 		for {
-			statusUpdate()
+			StatUpdate(StatGet())
 			time.Sleep(time.Second)
 		}
 	}()
@@ -49,14 +28,16 @@ func init() {
 
 func mainWindows() {
 	CapSignal(CloseWindows)
+
+	logs.Info("main windows ready to startup")
+
 	cnt, err := MainWindow{
 		Title:          "Auto Proxy " + VersionGet(),
 		Icon:           ICON_Main,
 		AssignTo:       &mainWindow,
-		MinSize:        Size{mainWindowWidth, mainWindowHeight - 1},
-		Size:           Size{mainWindowWidth, mainWindowHeight - 1},
-		Layout:         VBox{Margins: Margins{Top: 10, Bottom: 10, Left: 10, Right: 10}},
-		Font:           Font{Bold: true},
+		MinSize:        Size{Width: 300, Height: 150},
+		Size:           Size{Width: 300, Height: 150},
+		Layout:         VBox{Margins: Margins{Top: 5, Bottom: 5, Left: 5, Right: 5}},
 		MenuItems:      MenuBarInit(),
 		StatusBarItems: StatusBarInit(),
 		Children: []Widget{
