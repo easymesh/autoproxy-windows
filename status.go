@@ -27,12 +27,12 @@ func StatusBarInit() []StatusBarItem {
 			AssignTo: &statusFlow,
 			Icon:     ICON_Network_Disable,
 			Text:     "",
-			Width:    100,
+			Width:    150,
 		},
 		{
 			AssignTo: &sessionFlow,
 			Text:     "",
-			Width:    80,
+			Width:    120,
 		},
 	}
 }
