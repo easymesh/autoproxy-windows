@@ -81,7 +81,7 @@ func newCertificates() (tls.Certificate, error) {
 		ExtKeyUsage:  []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
 		IPAddresses:  ipAddress,
 	}
-	pk, _ := rsa.GenerateKey(rand.Reader, 4096)
+	pk, _ := rsa.GenerateKey(rand.Reader, 2048)
 
 	derBytes, _ := x509.CreateCertificate(rand.Reader, &template, &template, &pk.PublicKey, pk)
 
