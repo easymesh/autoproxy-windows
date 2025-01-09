@@ -18,8 +18,7 @@ func newTransport(timeout int, tlscfg *tls.Config) *http.Transport {
 		}).DialContext,
 		ForceAttemptHTTP2:     true,
 		MaxIdleConns:          1000,
-		IdleConnTimeout:       2*tmout,
+		IdleConnTimeout:       2 * tmout,
 		TLSHandshakeTimeout:   tmout,
-		ExpectContinueTimeout: 5*time.Second }
+		ExpectContinueTimeout: 5 * time.Second}
 }
-

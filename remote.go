@@ -111,7 +111,7 @@ func TestEngin(testhttps string, item *Remote) (time.Duration, error) {
 		tls = true
 	}
 
-	forward, err := engin.NewHttpsProtocol(item.Address, 10, auth, tls, "", "")
+	forward, err := engin.NewHttpProxyForward(item.Address, 5, auth, tls, "", "")
 	if err != nil {
 		logs.Error("new remote http proxy fail, %s", err.Error())
 		return 0, err

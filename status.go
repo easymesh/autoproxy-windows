@@ -7,12 +7,10 @@ import (
 
 var statusFlow *walk.StatusBarItem
 var sessionFlow *walk.StatusBarItem
-var requestFlow *walk.StatusBarItem
 
-func UpdateStatFlow(speed string, session string, request string) {
+func UpdateStatFlow(speed string, session string) {
 	if statusFlow != nil {
-		statusFlow.SetText("Flow: " + speed)
-		requestFlow.SetText("Request: " + request)
+		statusFlow.SetText("FlowByte: " + speed)
 		sessionFlow.SetText("Session: " + session)
 	}
 }
@@ -33,11 +31,6 @@ func StatusBarInit() []StatusBarItem {
 		},
 		{
 			AssignTo: &sessionFlow,
-			Text:     "",
-			Width:    80,
-		},
-		{
-			AssignTo: &requestFlow,
 			Text:     "",
 			Width:    80,
 		},

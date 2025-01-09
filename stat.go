@@ -8,9 +8,8 @@ import (
 )
 
 func StatUpdate(stat engin.StatInfo) {
-	UpdateStatFlow(
-		ByteView(stat.ForwardSize), fmt.Sprintf("%d", stat.SessionCnt), fmt.Sprintf("%d", stat.RequestCnt))
-	NotifyUpdateFlow(ByteView(stat.ForwardSize))
+	UpdateStatFlow(ByteView(stat.Size), fmt.Sprintf("%d", stat.Session))
+	NotifyUpdateFlow(ByteView(stat.Size))
 }
 
 func StatRunningStatus(enable bool) {

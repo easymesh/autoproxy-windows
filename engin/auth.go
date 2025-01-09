@@ -1,11 +1,12 @@
 package engin
 
 import (
-	"github.com/astaxie/beego/logs"
 	"net/http"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/astaxie/beego/logs"
 )
 
 type AuthItem struct {
@@ -20,10 +21,10 @@ type AuthCtrl struct {
 
 var authctrl AuthCtrl
 
-func init()  {
+func init() {
 	authctrl.Cache = make(map[string]AuthItem, 100)
 	go func() {
-		for  {
+		for {
 			now := time.Now()
 			authctrl.Lock()
 			for _, v := range authctrl.Cache {
@@ -38,8 +39,10 @@ func init()  {
 	}()
 }
 
-func AuthLogin(r *http.Request)  {
+func AuthLogin(r *http.Request) {
 	address := strings.Split(r.RemoteAddr, ":")[0]
+
+	logs.Info("auth login with address %s in cache", address)
 
 	authctrl.Lock()
 	defer authctrl.Unlock()
@@ -53,10 +56,6 @@ func AuthCache(r *http.Request) bool {
 	authctrl.RLock()
 	defer authctrl.RUnlock()
 
-	_,ok := authctrl.Cache[address]
-	if ok {
-		return true
-	}
-	return false
+	_, ok := authctrl.Cache[address]
+	return ok
 }
-

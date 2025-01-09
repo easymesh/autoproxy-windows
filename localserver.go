@@ -15,7 +15,7 @@ var access engin.Access
 func StatGet() engin.StatInfo {
 	acc := access
 	if acc != nil {
-		return acc.StatGet()
+		return engin.StatGet()
 	}
 	return engin.StatInfo{}
 }
@@ -87,7 +87,7 @@ func remoteUpdate() error {
 		auth = &engin.AuthInfo{User: remoteCurrent.User, Token: remoteCurrent.Password}
 	}
 
-	forward, err := engin.NewHttpsProtocol(remoteCurrent.Address, 60, auth, tlsEnable, "", "")
+	forward, err := engin.NewHttpProxyForward(remoteCurrent.Address, 60, auth, tlsEnable, "", "")
 	if err != nil {
 		logs.Error("new remote http proxy fail, %s", err.Error())
 		return err
@@ -164,7 +164,7 @@ func ServerStart() error {
 		return err
 	}
 
-	LocalForward = engin.NewDefault(60)
+	LocalForward = engin.NewLocalForward(60)
 
 	err = remoteUpdate()
 	if err != nil {
